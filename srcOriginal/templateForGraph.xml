@@ -1,0 +1,9 @@
+<Nodesets>    
+<!-- Full boundary inlet and outlet in x-direction-->                                  
+    <Nodeset name="inlet" type="0"     
+         xmin="-0.41 -0.01 -0.01"         
+         xmax="-0.19 10.01 10.01" />      
+    <Nodeset name="outlet" type="0"     
+         xmin="10.19 -0.01 -0.01"         
+         xmax="10.41 10.01 10.01" />    
+         
