@@ -1,0 +1,3 @@
+The structure of these benchmarks is inherited from the GEOS investigation.
+At this level, there were a lot of GEOS related results, which are no longer relevant.
+Changing this structure will break the original code.

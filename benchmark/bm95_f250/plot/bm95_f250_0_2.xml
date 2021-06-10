@@ -1,0 +1,1053 @@
+<?xml version="1.0" ?>
+<!--# # -->
+<Problem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="geos_v0.0.xsd">
+
+<!--
+PARAMETERS
+-->
+<Parameter   pathTableDirectory="../../../../dfn_geos/tables/"
+             ApertureXFile = "contactOffset.X.Frac1.txt"
+             ApertureYFile = "contactOffset.X.Frac1.txt"
+             ApertureZFile = "contactOffset.Z.Frac.txt"
+             ApertureZFileFrac1 = "contactOffset.Z.Frac1.txt"
+             ApertureZFileFrac2 = "contactOffset.Z.Frac2.txt"
+             ApertureZFileFrac3 = "contactOffset.Z.Frac3.txt"
+             pathOutputDirectory = "./out/"
+             pathPlotDirectory   = "plot39"
+             pathSlaveDirectory  = "sub"
+             spatialPartitionX  = "1"
+             spatialPartitionY  = "1"
+             spatialPartitionZ  = "1"
+             meshPartitionX  = "50"
+             meshPartitionY  = "50"
+             meshPartitionZ  = "4"
+	           plotInterval = "20"
+	           wftfDT = "1s"
+	           endTime = "20"
+  	         wftfVolumetricFlux = "volumetricFlux"
+   	         wftfAperture = "aperture"
+  	         wftfPressure = "inletPressure"
+
+	           fractureFrictionAngle = "30"
+	           fractureNormalStiffness = "10.0e9"
+	           fractureShearStiffness = "1.0e9"
+	           fractureTensileStrength = "0.0"
+	           fractureCohesion = "0.0"
+	           fractureDilationAngle = "0"
+	           fractureRockToughness = "1.5e6"
+	           fractureFailStress = "1.0e9 Pa"
+	           fractureHydConductivity="1.78e-10"
+/>
+
+<Solvers>
+    <Hydrofracture name="hfsolve"
+                   useMLPreconditioner="1"
+                   scalingOption="2"
+                   timeIntegration="0"
+                   ppSolverName="ppsolve"
+                   lgSolverName="lagsolve"
+                   hgStiff="0.0"
+                   normalJointStiffness="1.0e10 Pa"
+                   peanutButter="0.0"
+                   tolNewton="1.0e-4"
+                   maxIterNewton="20"
+                   tol="1.0e-5"
+                   maxResolves="0"
+                   reuseK="0"
+                   verbose="1"/>
+
+    <LagrangeSmallStrainLinearElastic name="lagsolve" 
+                                      timeIntegrationOption="0"
+                                      hasReferenceStress="1"
+                                      dampingM="0.0"
+                                      dampingK="0.0"
+                                      newmarkGamma="0.9"
+                                      />
+
+    <ParallelPlateFlowSolverFVP name="ppsolve" 
+                                tol="1e-20"
+                                newtonTol="1.0e-20"
+                                maxIterNewton="10"
+                                useDirectSolver="0"
+                                useMLPreconditioner="0"
+                                verbose="1"
+                                UpdateAperture="1"
+                                MinimumAperture="0.0 mm"
+                                MaximumAperture="100.0 mm"
+                                ZeroApertureVolume="0.0 mm"
+                                ZeroApertureOffset="0.0 mm"
+                                boundPhysicalAperture="2"
+                                apertureTable="aperTable"
+                                BartonJointParameters="1.0e-4 5.0e6 1.0e-5"
+                                contactK="1.0e10"
+                                permeabilityUpdateOption="0"
+                                gamma="0.0e-9"
+                                phi="1.0"
+                                phiLimiter="0"
+                                mu="0.001 Pa.s"
+                                incompressibleFlow="1"
+                                steadyStateFlow="0"
+                                BulkModulus="2e9 Pa"
+                                cutoffPressure="-1.0e99 Pa"
+                                negPressAperFix="0"
+                                negPressSlopeReduction="1.0"
+                                gravityVector="0 0 -9.81"
+                                />        
+</Solvers>
+
+<SolverApplications>
+	<Application name="1" begintime="0.0" endtime="10.0" dt="1">
+		<Apply solver="ppsolve" toregions="Region" />
+	</Application>
+	<Application name="2" begintime="10.0" endtime="$:endTime" dt="10">
+		<Apply solver="ppsolve" toregions="Region" />
+	</Application> 
+</SolverApplications>
+
+<Fracture fractureFlag="1" 
+  failCriterion="2"
+  verbose="0" 
+  type="InitiallyRigidCohesiveZone"
+  rockToughness="$:fractureRockToughness"
+  failstress="$:fractureFailStress"
+  failgap="0.1 m"
+  separableSet="center"
+  preFractureSetName="fracturePlane"
+  unloadFlag="0"
+  allowVacuumFrac="1"
+  />
+
+<ElementRegions>
+	<ElementRegion name="Region" elementtype="poly">
+		<LinearElasticMaterial 
+			ShearModulus="17.78e9"
+			Density="2650" 
+			BulkModulus="46.37e9" />
+	</ElementRegion>
+</ElementRegions>
+
+<InitialConditions>
+    <!-- Face normals/centers -->
+    <CalculateFaceNormals/>
+    <CalculateFaceCenters/>
+    <!--ConstantInitialCondition fieldname="Aperture" fieldtype="Scalar" object="Face" toregions="Region" setnames="fracturePlane"  value="0.00001" /-->
+    <InitialConditionFunction 
+		fieldname="contactOffset" 
+		fieldtype="Scalar" 
+		object="Face" 
+		setnames="fracturePlane"
+		function="FloorFunc"
+		variables="FaceCenter"
+		variableTypes="Vector" /> 
+</InitialConditions>
+
+<Tables>
+	<Table1D name="ttable" 
+		 coord="0.0, 1.0, 1.0e99" 
+		 value="0.0, 1.0, 1.0" />
+	<Table2D name="FloorFunc" 
+	    value_file="$:pathTableDirectory$:ApertureZFile" 
+	    x_file="$:pathTableDirectory$:ApertureXFile"
+	    y_file="$:pathTableDirectory$:ApertureYFile"    />
+	<Table2D name="FloorFunc1" 
+	    value_file="$:pathTableDirectory$:ApertureZFileFrac1" 
+	    x_file="$:pathTableDirectory$:ApertureXFile"
+	    y_file="$:pathTableDirectory$:ApertureYFile"    />
+	<Table2D name="FloorFunc2" 
+	    value_file="$:pathTableDirectory$:ApertureZFileFrac2" 
+	    x_file="$:pathTableDirectory$:ApertureXFile"
+	    y_file="$:pathTableDirectory$:ApertureYFile"    />
+	<Table2D name="FloorFunc3" 
+	    value_file="$:pathTableDirectory$:ApertureZFileFrac3" 
+	    x_file="$:pathTableDirectory$:ApertureXFile"
+	    y_file="$:pathTableDirectory$:ApertureYFile"    />
+  <Table1D 
+      name="aperTable" 
+      coord="-1.0 mm , 0.0 mm"
+      value=" 0.01 mm,  0.01 mm" />
+</Tables>
+
+<Partition>
+	<SpatialPartition 
+	xpar="$:spatialPartitionX" 
+	ypar="$:spatialPartitionY" 
+	zpar="$:spatialPartitionZ" />
+</Partition>
+
+
+<Mesh   xcoords="-0.40 10.40"
+        ycoords="0.00 10.00"
+        zcoords="0.00 10.00"
+        nx="54"
+        ny="50"
+        nz="50"
+        elementType="C3D8"
+        regionNames="Region" />
+
+
+
+<!--                                        
+NODESETS                                    
+-->                                         
+<Nodesets>    
+<!-- Full boundary inlet and outlet in x-direction-->                                  
+    <Nodeset name="inlet" type="0"     
+         xmin="-0.41 -0.01 -0.01"         
+         xmax="-0.19 10.01 10.01" />      
+    <Nodeset name="outlet" type="0"     
+         xmin="10.19 -0.01 -0.01"         
+         xmax="10.41 10.01 10.01" />    
+
+  
+
+
+<!--boundary nodesets --> 
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.41 -0.01 2.99"        
+         xmax="0.01 3.01 3.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.41 4.99 4.99"        
+         xmax="0.01 5.01 8.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.41 2.99 5.99"        
+         xmax="0.01 3.01 9.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.41 6.99 -0.01"        
+         xmax="0.01 7.01 2.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.41 6.99 1.99"        
+         xmax="0.01 10.01 2.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.41 2.99 6.99"        
+         xmax="0.01 6.01 7.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.41 0.99 1.99"        
+         xmax="0.01 4.01 2.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.41 1.99 2.99"        
+         xmax="0.01 5.01 3.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.41 1.99 0.99"        
+         xmax="0.01 2.01 4.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.41 1.99 5.99"        
+         xmax="0.01 2.01 9.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.41 7.99 2.99"        
+         xmax="0.01 10.01 3.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.41 4.99 4.99"        
+         xmax="0.01 8.01 5.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.41 7.99 0.99"        
+         xmax="0.01 10.01 1.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.41 5.99 4.99"        
+         xmax="0.01 10.01 5.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.41 -0.01 5.99"        
+         xmax="0.01 3.01 6.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.41 2.99 7.99"        
+         xmax="0.01 3.01 10.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.41 -0.01 7.99"        
+         xmax="0.01 4.01 8.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.41 8.99 5.99"        
+         xmax="0.01 9.01 9.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.41 -0.01 0.99"        
+         xmax="0.01 3.01 1.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.41 3.99 2.99"        
+         xmax="0.01 7.01 3.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.41 7.99 6.99"        
+         xmax="0.01 10.01 7.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.41 5.99 1.99"        
+         xmax="0.01 6.01 5.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.41 0.99 0.99"        
+         xmax="0.01 1.01 4.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="9.99 1.99 4.99"        
+         xmax="10.41 5.01 5.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="9.99 1.99 3.99"        
+         xmax="10.41 5.01 4.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="9.99 -0.01 1.99"        
+         xmax="10.41 0.01 5.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="9.99 0.99 3.99"        
+         xmax="10.41 1.01 7.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="9.99 0.99 6.99"        
+         xmax="10.41 4.01 7.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="9.99 1.99 2.99"        
+         xmax="10.41 5.01 3.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="9.99 1.99 1.99"        
+         xmax="10.41 2.01 5.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="9.99 5.99 7.99"        
+         xmax="10.41 9.01 8.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="9.99 3.99 8.99"        
+         xmax="10.41 8.01 9.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="9.99 8.99 4.99"        
+         xmax="10.41 9.01 8.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="9.99 0.99 0.99"        
+         xmax="10.41 1.01 4.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="9.99 0.99 2.99"        
+         xmax="10.41 4.01 3.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="9.99 3.99 -0.01"        
+         xmax="10.41 7.01 0.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="9.99 5.99 5.99"        
+         xmax="10.41 6.01 8.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="9.99 4.99 6.99"        
+         xmax="10.41 8.01 7.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="9.99 4.99 7.99"        
+         xmax="10.41 5.01 10.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="9.99 -0.01 0.99"        
+         xmax="10.41 3.01 1.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="9.99 2.99 8.99"        
+         xmax="10.41 6.01 9.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="9.99 7.99 2.99"        
+         xmax="10.41 10.01 3.01"/>      
+<!--normal nodesets --> 
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="1.99 -0.01 1.99"        
+         xmax="4.01 4.01 2.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="3.99 0.99 4.99"        
+         xmax="4.01 3.01 8.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="4.99 8.99 -0.01"        
+         xmax="5.01 10.01 3.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="3.99 5.99 3.99"        
+         xmax="4.01 8.01 7.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="4.99 6.99 7.99"        
+         xmax="7.01 10.01 8.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="2.99 5.99 6.99"        
+         xmax="5.01 6.01 10.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="3.99 5.99 4.99"        
+         xmax="6.01 9.01 5.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="3.99 8.99 -0.01"        
+         xmax="6.01 9.01 2.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="3.99 8.99 5.99"        
+         xmax="4.01 10.01 9.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="2.99 7.99 4.99"        
+         xmax="5.01 10.01 5.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="2.99 6.99 4.99"        
+         xmax="5.01 7.01 8.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.01 -0.01 2.99"        
+         xmax="2.01 3.01 3.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.01 4.99 4.99"        
+         xmax="2.01 5.01 8.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="7.99 1.99 4.99"        
+         xmax="10.01 5.01 5.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="1.99 1.99 0.99"        
+         xmax="4.01 2.01 4.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="5.99 2.99 0.99"        
+         xmax="6.01 5.01 4.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="4.99 5.99 7.99"        
+         xmax="5.01 8.01 10.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="2.99 1.99 2.99"        
+         xmax="3.01 4.01 6.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="4.99 4.99 1.99"        
+         xmax="7.01 5.01 5.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="2.99 2.99 2.99"        
+         xmax="5.01 6.01 3.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="2.99 5.99 4.99"        
+         xmax="5.01 9.01 5.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="8.99 1.99 3.99"        
+         xmax="10.01 5.01 4.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="2.99 2.99 -0.01"        
+         xmax="5.01 3.01 2.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="7.99 2.99 5.99"        
+         xmax="8.01 5.01 9.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="3.99 0.99 0.99"        
+         xmax="6.01 1.01 4.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="1.99 1.99 -0.01"        
+         xmax="2.01 4.01 2.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="0.99 7.99 3.99"        
+         xmax="1.01 10.01 7.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="6.99 2.99 6.99"        
+         xmax="9.01 6.01 7.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="6.99 0.99 1.99"        
+         xmax="9.01 4.01 2.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="4.99 6.99 3.99"        
+         xmax="7.01 7.01 7.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="2.99 2.99 1.99"        
+         xmax="3.01 5.01 6.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.01 2.99 5.99"        
+         xmax="2.01 3.01 9.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="4.99 7.99 6.99"        
+         xmax="5.01 10.01 10.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="5.99 5.99 3.99"        
+         xmax="8.01 6.01 8.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="1.99 7.99 8.99"        
+         xmax="4.01 10.01 9.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="8.99 6.99 -0.01"        
+         xmax="9.01 9.01 3.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="6.99 8.99 7.99"        
+         xmax="9.01 9.01 10.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="6.99 2.99 -0.01"        
+         xmax="7.01 5.01 2.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="1.99 1.99 6.99"        
+         xmax="4.01 4.01 7.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.01 6.99 -0.01"        
+         xmax="2.01 7.01 2.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="0.99 6.99 4.99"        
+         xmax="3.01 7.01 8.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.01 6.99 1.99"        
+         xmax="1.01 10.01 2.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.01 2.99 6.99"        
+         xmax="2.01 6.01 7.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="7.99 -0.01 1.99"        
+         xmax="10.01 0.01 5.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.01 0.99 1.99"        
+         xmax="2.01 4.01 2.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="2.99 6.99 7.99"        
+         xmax="5.01 7.01 10.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.01 1.99 2.99"        
+         xmax="1.01 5.01 3.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="6.99 0.99 6.99"        
+         xmax="7.01 3.01 10.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="8.99 4.99 -0.01"        
+         xmax="9.01 7.01 3.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="7.99 3.99 -0.01"        
+         xmax="8.01 6.01 3.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="0.99 6.99 5.99"        
+         xmax="3.01 10.01 6.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="8.99 0.99 3.99"        
+         xmax="10.01 1.01 7.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="2.99 8.99 7.99"        
+         xmax="5.01 9.01 10.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="7.99 0.99 6.99"        
+         xmax="10.01 4.01 7.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="4.99 2.99 2.99"        
+         xmax="7.01 6.01 3.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="4.99 1.99 0.99"        
+         xmax="5.01 4.01 4.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="3.99 7.99 8.99"        
+         xmax="6.01 10.01 9.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="3.99 5.99 2.99"        
+         xmax="6.01 6.01 6.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="7.99 6.99 3.99"        
+         xmax="8.01 9.01 7.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="6.99 4.99 0.99"        
+         xmax="9.01 8.01 1.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="5.99 4.99 3.99"        
+         xmax="6.01 7.01 8.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="6.99 8.99 4.99"        
+         xmax="9.01 9.01 8.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="5.99 -0.01 1.99"        
+         xmax="8.01 2.01 2.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="8.99 3.99 1.99"        
+         xmax="9.01 6.01 6.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.01 1.99 0.99"        
+         xmax="2.01 2.01 4.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="5.99 5.99 5.99"        
+         xmax="6.01 8.01 8.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="2.99 8.99 7.99"        
+         xmax="3.01 10.01 10.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="6.99 0.99 4.99"        
+         xmax="9.01 1.01 8.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="0.99 7.99 3.99"        
+         xmax="3.01 8.01 7.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="7.99 1.99 2.99"        
+         xmax="10.01 5.01 3.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="7.99 5.99 2.99"        
+         xmax="8.01 8.01 6.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="2.99 9.99 5.99"        
+         xmax="5.01 10.01 9.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="0.99 8.99 -0.01"        
+         xmax="1.01 10.01 2.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="2.99 1.99 0.99"        
+         xmax="3.01 4.01 4.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="7.99 -0.01 3.99"        
+         xmax="8.01 2.01 7.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="8.99 -0.01 4.99"        
+         xmax="9.01 2.01 8.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="3.99 4.99 5.99"        
+         xmax="4.01 7.01 9.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="7.99 1.99 1.99"        
+         xmax="10.01 2.01 5.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="2.99 4.99 5.99"        
+         xmax="3.01 7.01 9.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="6.99 0.99 2.99"        
+         xmax="9.01 1.01 6.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="1.99 0.99 1.99"        
+         xmax="4.01 1.01 5.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="4.99 3.99 7.99"        
+         xmax="7.01 8.01 8.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="0.99 5.99 7.99"        
+         xmax="3.01 6.01 10.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="4.99 6.99 4.99"        
+         xmax="7.01 7.01 8.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="1.99 0.99 3.99"        
+         xmax="4.01 4.01 4.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="4.99 3.99 1.99"        
+         xmax="7.01 7.01 2.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="1.99 7.99 1.99"        
+         xmax="2.01 10.01 5.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.01 1.99 5.99"        
+         xmax="2.01 2.01 9.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="4.99 -0.01 0.99"        
+         xmax="7.01 2.01 1.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="2.99 3.99 3.99"        
+         xmax="5.01 8.01 4.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="0.99 5.99 6.99"        
+         xmax="3.01 9.01 7.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="5.99 1.99 2.99"        
+         xmax="8.01 2.01 6.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="0.99 5.99 -0.01"        
+         xmax="3.01 6.01 2.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="7.99 5.99 7.99"        
+         xmax="10.01 9.01 8.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="0.99 1.99 1.99"        
+         xmax="1.01 4.01 5.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="1.99 0.99 7.99"        
+         xmax="2.01 3.01 10.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="0.99 3.99 1.99"        
+         xmax="1.01 6.01 5.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="8.99 5.99 5.99"        
+         xmax="9.01 8.01 9.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="5.99 7.99 2.99"        
+         xmax="8.01 8.01 6.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.01 7.99 2.99"        
+         xmax="2.01 10.01 3.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="0.99 3.99 2.99"        
+         xmax="3.01 8.01 3.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="5.99 4.99 1.99"        
+         xmax="6.01 7.01 6.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="3.99 5.99 0.99"        
+         xmax="6.01 8.01 1.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="6.99 2.99 -0.01"        
+         xmax="9.01 3.01 3.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="7.99 1.99 7.99"        
+         xmax="8.01 4.01 10.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="2.99 3.99 5.99"        
+         xmax="3.01 6.01 9.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="8.99 3.99 8.99"        
+         xmax="10.01 8.01 9.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="7.99 0.99 7.99"        
+         xmax="8.01 3.01 10.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="5.99 2.99 4.99"        
+         xmax="6.01 5.01 8.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="3.99 7.99 5.99"        
+         xmax="6.01 10.01 6.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="4.99 8.99 0.99"        
+         xmax="7.01 9.01 4.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="7.99 8.99 4.99"        
+         xmax="10.01 9.01 8.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="1.99 5.99 5.99"        
+         xmax="4.01 6.01 10.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="5.99 2.99 3.99"        
+         xmax="8.01 3.01 8.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="7.99 0.99 0.99"        
+         xmax="10.01 1.01 4.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="4.99 5.99 2.99"        
+         xmax="7.01 8.01 3.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="8.99 1.99 1.99"        
+         xmax="9.01 4.01 5.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="0.99 6.99 0.99"        
+         xmax="3.01 7.01 4.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="4.99 7.99 2.99"        
+         xmax="5.01 10.01 6.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.01 4.99 4.99"        
+         xmax="2.01 8.01 5.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="1.99 5.99 2.99"        
+         xmax="4.01 10.01 3.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="8.99 0.99 2.99"        
+         xmax="10.01 4.01 3.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="6.99 2.99 5.99"        
+         xmax="9.01 3.01 8.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="9.99 1.99 5.99"        
+         xmax="10.01 4.01 9.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="2.99 8.99 2.99"        
+         xmax="5.01 9.01 6.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="3.99 1.99 6.99"        
+         xmax="6.01 5.01 7.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="6.99 1.99 5.99"        
+         xmax="9.01 2.01 9.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="2.99 3.99 -0.01"        
+         xmax="5.01 8.01 0.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="6.99 1.99 1.99"        
+         xmax="9.01 5.01 2.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="2.99 4.99 3.99"        
+         xmax="3.01 7.01 7.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="3.99 2.99 4.99"        
+         xmax="6.01 6.01 5.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="5.99 6.99 3.99"        
+         xmax="6.01 9.01 7.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="7.99 8.99 3.99"        
+         xmax="8.01 10.01 6.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="3.99 -0.01 2.99"        
+         xmax="4.01 1.01 6.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="4.99 0.99 5.99"        
+         xmax="7.01 4.01 6.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="5.99 6.99 -0.01"        
+         xmax="8.01 7.01 2.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="2.99 6.99 3.99"        
+         xmax="5.01 7.01 7.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="5.99 -0.01 -0.01"        
+         xmax="6.01 2.01 3.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="7.99 7.99 -0.01"        
+         xmax="8.01 10.01 2.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="1.99 1.99 3.99"        
+         xmax="4.01 5.01 4.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.01 7.99 0.99"        
+         xmax="2.01 10.01 1.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="6.99 -0.01 -0.01"        
+         xmax="9.01 0.01 2.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="1.99 8.99 5.99"        
+         xmax="4.01 9.01 8.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="4.99 2.99 4.99"        
+         xmax="7.01 3.01 8.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="4.99 1.99 5.99"        
+         xmax="5.01 4.01 9.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="2.99 8.99 3.99"        
+         xmax="3.01 10.01 7.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="7.99 3.99 -0.01"        
+         xmax="10.01 7.01 0.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="2.99 3.99 1.99"        
+         xmax="5.01 4.01 6.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="3.99 1.99 -0.01"        
+         xmax="4.01 4.01 2.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="3.99 -0.01 -0.01"        
+         xmax="6.01 3.01 0.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="0.99 3.99 0.99"        
+         xmax="3.01 7.01 1.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="1.99 -0.01 -0.01"        
+         xmax="4.01 0.01 4.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="1.99 1.99 7.99"        
+         xmax="4.01 5.01 8.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="4.99 1.99 1.99"        
+         xmax="5.01 4.01 5.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.01 5.99 4.99"        
+         xmax="2.01 10.01 5.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.01 -0.01 5.99"        
+         xmax="2.01 3.01 6.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="5.99 -0.01 2.99"        
+         xmax="6.01 2.01 6.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="2.99 4.99 5.99"        
+         xmax="5.01 8.01 6.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="1.99 4.99 0.99"        
+         xmax="2.01 7.01 4.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="3.99 -0.01 2.99"        
+         xmax="6.01 3.01 3.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="5.99 7.99 3.99"        
+         xmax="8.01 10.01 4.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="4.99 6.99 5.99"        
+         xmax="7.01 10.01 6.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="5.99 0.99 4.99"        
+         xmax="6.01 3.01 8.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="1.99 -0.01 5.99"        
+         xmax="4.01 2.01 6.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.01 2.99 7.99"        
+         xmax="1.01 3.01 10.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="1.99 5.99 5.99"        
+         xmax="4.01 9.01 6.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="6.99 1.99 4.99"        
+         xmax="9.01 5.01 5.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="5.99 1.99 1.99"        
+         xmax="8.01 2.01 4.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="5.99 0.99 -0.01"        
+         xmax="8.01 1.01 2.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="5.99 1.99 -0.01"        
+         xmax="8.01 5.01 0.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="7.99 5.99 5.99"        
+         xmax="10.01 6.01 8.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="7.99 0.99 -0.01"        
+         xmax="8.01 3.01 3.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="1.99 6.99 -0.01"        
+         xmax="4.01 7.01 3.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="3.99 2.99 0.99"        
+         xmax="4.01 5.01 4.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="0.99 2.99 -0.01"        
+         xmax="3.01 3.01 3.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.01 -0.01 7.99"        
+         xmax="2.01 4.01 8.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="1.99 4.99 6.99"        
+         xmax="4.01 8.01 7.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="1.99 3.99 3.99"        
+         xmax="2.01 6.01 7.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="0.99 7.99 0.99"        
+         xmax="3.01 10.01 1.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="7.99 4.99 6.99"        
+         xmax="10.01 8.01 7.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="0.99 -0.01 4.99"        
+         xmax="3.01 2.01 5.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="3.99 5.99 2.99"        
+         xmax="4.01 8.01 6.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="6.99 2.99 1.99"        
+         xmax="7.01 5.01 6.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="6.99 -0.01 3.99"        
+         xmax="9.01 2.01 4.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="5.99 6.99 -0.01"        
+         xmax="6.01 9.01 2.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="6.99 6.99 1.99"        
+         xmax="9.01 7.01 5.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="5.99 -0.01 2.99"        
+         xmax="8.01 3.01 3.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="5.99 7.99 0.99"        
+         xmax="8.01 10.01 1.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="5.99 6.99 3.99"        
+         xmax="8.01 7.01 7.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="3.99 0.99 2.99"        
+         xmax="6.01 1.01 6.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="5.99 5.99 1.99"        
+         xmax="8.01 6.01 5.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="7.99 4.99 7.99"        
+         xmax="10.01 5.01 10.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="4.99 2.99 6.99"        
+         xmax="7.01 6.01 7.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="5.99 6.99 5.99"        
+         xmax="8.01 7.01 9.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.01 8.99 5.99"        
+         xmax="2.01 9.01 9.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="7.99 2.99 3.99"        
+         xmax="8.01 5.01 7.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="8.99 6.99 4.99"        
+         xmax="9.01 9.01 8.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="7.99 -0.01 0.99"        
+         xmax="10.01 3.01 1.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="6.99 3.99 1.99"        
+         xmax="9.01 4.01 4.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="0.99 6.99 2.99"        
+         xmax="3.01 7.01 6.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="8.99 0.99 3.99"        
+         xmax="9.01 3.01 7.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="5.99 0.99 1.99"        
+         xmax="8.01 4.01 2.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="0.99 0.99 5.99"        
+         xmax="1.01 3.01 9.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="6.99 7.99 2.99"        
+         xmax="7.01 10.01 6.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="2.99 -0.01 0.99"        
+         xmax="5.01 3.01 1.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="7.99 5.99 7.99"        
+         xmax="8.01 8.01 10.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="2.99 6.99 2.99"        
+         xmax="3.01 9.01 6.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="6.99 7.99 -0.01"        
+         xmax="7.01 10.01 2.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="4.99 6.99 5.99"        
+         xmax="5.01 9.01 10.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="1.99 8.99 -0.01"        
+         xmax="4.01 9.01 3.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="6.99 -0.01 5.99"        
+         xmax="9.01 4.01 6.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="4.99 -0.01 5.99"        
+         xmax="5.01 2.01 9.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="5.99 7.99 2.99"        
+         xmax="6.01 10.01 6.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="1.99 6.99 0.99"        
+         xmax="4.01 7.01 4.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.01 -0.01 0.99"        
+         xmax="1.01 3.01 1.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.01 3.99 2.99"        
+         xmax="1.01 7.01 3.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="5.99 2.99 8.99"        
+         xmax="8.01 6.01 9.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.01 0.99 -0.01"        
+         xmax="0.01 3.01 3.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="2.99 6.99 1.99"        
+         xmax="5.01 10.01 2.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="1.99 6.99 6.99"        
+         xmax="4.01 10.01 7.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="7.99 2.99 8.99"        
+         xmax="10.01 6.01 9.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.01 7.99 6.99"        
+         xmax="2.01 10.01 7.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="3.99 6.99 7.99"        
+         xmax="6.01 7.01 10.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="0.99 0.99 2.99"        
+         xmax="1.01 3.01 6.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="4.99 -0.01 6.99"        
+         xmax="5.01 2.01 10.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.01 5.99 1.99"        
+         xmax="2.01 6.01 5.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="-0.01 0.99 0.99"        
+         xmax="1.01 1.01 4.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="7.99 7.99 2.99"        
+         xmax="10.01 10.01 3.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="8.99 -0.01 1.99"        
+         xmax="9.01 2.01 5.01"/>      
+    <Nodeset name="fracturePlane" type="0"     
+         xmin="5.99 7.99 1.99"        
+         xmax="6.01 10.01 5.01"/>      
+
+
+
+</Nodesets>
+
+<BoundaryConditions> 
+    <BoundaryCondition  object="Node" fieldname="Displacement" setnames="xneg" component="0" scale="0.0" fieldtype="Vector" />  
+    <BoundaryCondition  object="Node" fieldname="Displacement" setnames="xpos" component="0" scale="0.0" fieldtype="Vector" /> 
+    <BoundaryCondition  object="Node" fieldname="Displacement" setnames="yneg" component="1" scale="0.0" fieldtype="Vector" /> 
+    <BoundaryCondition  object="Node" fieldname="Displacement" setnames="ypos" component="1" scale="0.0" fieldtype="Vector" /> 
+    <BoundaryCondition  object="Node" fieldname="Displacement" setnames="zneg" component="2" scale="0.0" fieldtype="Vector" />  
+    <BoundaryCondition  object="Node" fieldname="Displacement" setnames="zpos" component="2" scale="0.0" fieldtype="Vector" /> 
+<!-- 
+FLUID FLOW BC 
+--> 
+    <!--<BoundaryCondition object="Face" fieldname="VolumeRate" setnames="inlet" scale="1.0e-9" table="ttable" option="1" /> /--> 
+    <BoundaryCondition object="Face" fieldname="Pressure" setnames="inlet"  scale="2000000.0" timetable="ttable" />   
+    <BoundaryCondition object="Face" fieldname="Pressure" setnames="outlet" scale="1000000.0" timetable="ttable" />   
+</BoundaryConditions> 
+
+<Output writePlot="1"  
+  plot_interval="$:plotInterval" 
+  writeRestart="0"  
+  restart_interval="1000.0"  
+  plotfile_root="plot0"  
+  parallel_silo="16"  
+  slave_directory="sub" 
+  writeFEMFaces="1"  
+  writeFEMEdges="0" /> 
+
+</Problem>
