@@ -17,8 +17,8 @@ import time
 
 saving 				= 0		# save results to file
 
-segment 			= 1 	# use HSPM
-simpleWidth 		= 0     # use ISPM
+segment 			= 0 	# use HSPM
+simpleWidth 		= 1     # use ISPM
 
 if saving == 1:
 	filename = 'ISPM_100_case_results_Quartz.txt'

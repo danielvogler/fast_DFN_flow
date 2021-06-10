@@ -39,9 +39,6 @@ def segmentation(workingDir, inputFile):
 
     # These commands initialize lists and the nBoxes counter which will be filled with the relevant information.
     nBoxes   = 0
-    # boxes    = []
-    # boxNames = []
-
     intCoordx = []  # holds the minimum and maximum x-coordinates of the segments
     intCoordy = []  # holds the minimum and maximum y-coordinates of the segments
     intCoordz = []  # holds the minimum and maximum z-coordinates of the segments
@@ -58,9 +55,6 @@ def segmentation(workingDir, inputFile):
         intCoordz.append(float(z) - diff)
         nBoxes  += 1
     diff = 2*aperture # needed after this point
-    # diff = 0.02
-
-
 
     readMeshList = 0
     if readMeshList == 1:
@@ -98,34 +92,34 @@ def segmentation(workingDir, inputFile):
     xID = []
     yID = []
     zID = []
-    for i in xrange(len(xCoord)-1):
+    for i in range(len(xCoord)-1):
         xID.append([])
 
-    for i in xrange(len(yCoord)-1):
+    for i in range(len(yCoord)-1):
         yID.append([])
 
-    for i in xrange(len(zCoord)-1):
+    for i in range(len(zCoord)-1):
         zID.append([])
 
     # Find out which fractures lie on which intervals.
-    for i in xrange(2,nBoxes):                                # Go through all boxes
+    for i in range(2,nBoxes):                                # Go through all boxes
 
         # X-coordinate intervals
         indLow = np.where(xCoord == intCoordx[2*i])         # Find the index of the first interval using xMin
         indUp  = np.where(xCoord == intCoordx[2*i+1])       # Find the index of the last  interval using xMax
-        for j in xrange(indLow[0], indUp[0]):     # Add the current fracture number to all intervals between xMin and xMax
+        for j in range(indLow[0][0], indUp[0][0]):     # Add the current fracture number to all intervals between xMin and xMax
             xID[j].append(i)
 
         # Y-coordinate intervals
         indLow = np.where(yCoord == intCoordy[2*i])         # Find the index of the first interval using yMin
         indUp  = np.where(yCoord == intCoordy[2*i+1])       # Find the index of the last  interval using yMax
-        for j in xrange(indLow[0], indUp[0]):     # Add the current fracture number to all intervals between yMin and yMax
+        for j in range(indLow[0][0], indUp[0][0]):     # Add the current fracture number to all intervals between yMin and yMax
             yID[j].append(i)
 
         # Z-coordinate intervals
         indLow = np.where(zCoord == intCoordz[2*i])         # Find the index of the first interval using yMin
         indUp  = np.where(zCoord == intCoordz[2*i+1])       # Find the index of the last  interval using yMax
-        for j in xrange(indLow[0], indUp[0]):     # Add the current fracture number to all intervals between yMin and yMax
+        for j in range(indLow[0][0], indUp[0][0]):     # Add the current fracture number to all intervals between yMin and yMax
             zID[j].append(i)
 
     tG1 = time.time() - tG1
@@ -247,9 +241,9 @@ def segmentation(workingDir, inputFile):
     # Go through the domain and attach the nodes with edges.
     ####
 
-    for k in xrange(0,len(zCoord)-1):
-        for j in xrange(0,len(yCoord)-1):
-            for i in xrange(0,len(xCoord)-1):
+    for k in range(0,len(zCoord)-1):
+        for j in range(0,len(yCoord)-1):
+            for i in range(0,len(xCoord)-1):
                 seg = int(segments[k][j][i])  # get segment
                 if seg== -1:
                     continue
@@ -289,7 +283,7 @@ def segmentation(workingDir, inputFile):
     ## Attach inlet and outlet to their respective intersections.
     ############################################################################################
     # only one direction is needed
-    for i in xrange(0,2):
+    for i in range(0,2):
         for j in vertsInBox[i]:
             if i == 0:
                 v1, v2 = g.vertex(i) ,  g.vertex(j+2) # source to boundary
@@ -377,7 +371,7 @@ def segmentation(workingDir, inputFile):
       dxPart   = (10.6)**2
       ########
 
-      for i in xrange(0,1000): # perhaps do a while loop instead. This should be safer...
+      for i in range(0,1000): # perhaps do a while loop instead. This should be safer...
         pLength    = []  # store lengths of this path
         pWidth     = []  # store widths of this path
         pFactor    = []  # store flow factor of this path (percentage of the edge that this path uses).
