@@ -9,6 +9,11 @@
 
 
 
+
+### Dependencies
+- graph-tool: [https://git.skewed.de/count0/graph-tool](https://git.skewed.de/count0/graph-tool)
+
+
 ### Conda environment:
 ```bash
 conda env create -f environment.yml
@@ -29,9 +34,4 @@ To test the addition of new packages to the environment.yml file :
 ```bash
 conda env update --file environment.yml
 ```
-
-
-=======
-### Dependencies
-- graph-tool: [https://git.skewed.de/count0/graph-tool](https://git.skewed.de/count0/graph-tool)
 
