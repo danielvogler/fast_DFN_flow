@@ -4,4 +4,9 @@ benchmark/bm54_f17/plot/bm54_f17_3_Graph_seg_checking.png
 benchmark/bm95_f250/plot/Paths/
 benchmark/bm95_f250/plot/bm95_f250_0_2_Graph_seg_MC_Flow.png
 benchmark/bm95_f250/plot/bm95_f250_0_2_Graph_seg_checking.png
+src/*.pyc
+src/*.pyo
+srcOriginal/*.pyc
+srcOriginal/*.pyo
+srcOriginal/visualization_of_3Dgraph.py
 
