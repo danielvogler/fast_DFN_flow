@@ -18,7 +18,7 @@ import graph_tool.topology as tp
 
 def abstractQestimator(fracGraph, solver):
 	""" Set of methods, that estimate flowrates of a given graph.
-	
+
 	"""
 
 def estimateFlowRate(abstractQestimator):
@@ -33,13 +33,13 @@ def estimateFlowRate(abstractQestimator):
 			print "Graph not connected. No percolation possible."
 			print ""
 			return 0.0, 0, nVertices, nEdges # Qvalue, number of paths.
-		
-		removeNoFlowEdges(g, res, eps) 
+
+		removeNoFlowEdges(g, res, eps)
 		# Cleanup before next step to speed things up
- 
+
 		# Clean up, so flow only goes in one direction
 		for e in g.edges():
-		    eSrc = e.source() 
+		    eSrc = e.source()
 		    eTgt = e.target()
 		    if not g.edge(eTgt,eSrc):
 		        continue
@@ -57,7 +57,7 @@ def estimateFlowRate(abstractQestimator):
 				    res[eReverse] -= there
 				    res[e] = 0
 
-		removeNoFlowEdges(g, res, eps) 
+		removeNoFlowEdges(g, res, eps)
 		# remaining Cleanup
 
 		QgravTot, numPaths   = pathFinder(g, src, tgt, res, path_crit, aCmC)
@@ -108,7 +108,7 @@ def pathFinder(gCopy, src, tgt, resCopy, path_crit, aCmC):
 		vShort, eShort = tp.shortest_path(gCopy,src,tgt, weights=path_crit) # find shortest path
 
 		if len(eShort) == 0: # no more path found
-		    return QgravTot, numPaths  
+		    return QgravTot, numPaths
 
 		else:
 			minFlow = 10000
@@ -123,7 +123,7 @@ def pathFinder(gCopy, src, tgt, resCopy, path_crit, aCmC):
 			for e in eShort:
 				L = e_length[e]
 				Ltot += L
-				wSuperWeighted += L*resFull[e]/e_width[e] 
+				wSuperWeighted += L*resFull[e]/e_width[e]
 
 				resC = resCopy[e]
 				if resC < minFlow:
@@ -137,7 +137,7 @@ def pathFinder(gCopy, src, tgt, resCopy, path_crit, aCmC):
 			zIn    = cent[v_in][2]
 			zOut   = cent[v_out][2]
 			dz     = zOut -zIn
-			pLdiag = np.sqrt( dxPart + (cent[v_out][1] - cent[v_in][1])**2 + dz**2) # radial distance between inflow and outflow 
+			pLdiag = np.sqrt( dxPart + (cent[v_out][1] - cent[v_in][1])**2 + dz**2) # radial distance between inflow and outflow
 			pGrav  = 1.0e6 - gravPart*dz
 
 
