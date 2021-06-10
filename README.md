@@ -1,7 +1,6 @@
 # fast_DFN_flow
 
 ### Needed
-- overview test to ensure results do not change
 - wrapper for graph-tool to invert dependency
 - refactoring
 
@@ -30,4 +29,17 @@ To test the addition of new packages to the environment.yml file :
 ```bash
 conda env update --file environment.yml
 ```
+
+### Unit testing:
+The src/test folder includes tests to ensure the results do not change.
+To check these tests, go into the src/test folder and use:
+```bash
+pytest -v
+```
+and
+```bash
+coverage report -m
+```
+
+
 
