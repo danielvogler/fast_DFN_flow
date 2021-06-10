@@ -35,7 +35,7 @@ __author__ = "martin"
 __date__ = "$Jun 24, 2015 1:03:06 PM$"
 
 if __name__ == "__main__":
-    print "Just executed box3D.py"
+    print("Just executed box3D.py")
 
 class PointT(object): # Creates a point object with three float coordinates
     #@profile
@@ -46,8 +46,8 @@ class PointT(object): # Creates a point object with three float coordinates
     #@profile
     def str(self):
         return( "(" + str(self.x) +", "+ str(self.y) +", "+ str(self.z )+")")
-     
-class BoxT(object): # Creates a box object 
+
+class BoxT(object): # Creates a box object
     #@profile
     def __init__(self, minP, maxP, idx): # The 6 coordinates in minP and maxP can be used to determine the 8 corner points
         self.minP = minP
@@ -55,15 +55,15 @@ class BoxT(object): # Creates a box object
         self.idx  = idx  # gives the box a number
     #@profile
     def isEmpty(self):   # checks if there is a negative size of the box (Returns True). Returns False if all dimensions are positive.
-        return( (self.minP.x > self.maxP.x) or (self.minP.y > self.maxP.y) or (self.minP.z > self.maxP.z) ) 
+        return( (self.minP.x > self.maxP.x) or (self.minP.y > self.maxP.y) or (self.minP.z > self.maxP.z) )
     #@profile
-    def intersect(self, other): # defines the 6 coordinates of the intersect box between two fractures with which the 8 corner points can be found.      
+    def intersect(self, other): # defines the 6 coordinates of the intersect box between two fractures with which the 8 corner points can be found.
         minP = PointT( max(self.minP.x, other.minP.x),
                        max(self.minP.y, other.minP.y),
                        max(self.minP.z, other.minP.z)  )
         maxP = PointT( min(self.maxP.x, other.maxP.x),
                        min(self.maxP.y, other.maxP.y),
-                       min(self.maxP.z, other.maxP.z)  )           
+                       min(self.maxP.z, other.maxP.z)  )
         return( BoxT(minP, maxP, self.idx) ) # returns the intersect as a box.
 
     #@profile
@@ -75,7 +75,7 @@ class BoxT(object): # Creates a box object
             abs(self.maxP.y - other.maxP.y)<= eps and \
             abs(self.minP.z - other.minP.z)<= eps and \
             abs(self.maxP.z - other.maxP.z)<= eps:
-            print "equal fracture found"
+            print("equal fracture found")
             minP = PointT(2,2,2)
             maxP = PointT(1,1,1)
             equal = 1               # This variable is used to later ignore all intersects with this fracture copy.
@@ -88,7 +88,7 @@ class BoxT(object): # Creates a box object
                            min(self.maxP.z, other.maxP.z)  )
             equal = 0
 
-           
+
         return( BoxT(minP, maxP, self.idx), equal ) # returns the intersect as a box.
 
     def equalCheck(self, other):  # checks if two fractures are equal to each other
@@ -106,7 +106,7 @@ class BoxT(object): # Creates a box object
 
     #@profile
     def inside(self,other): # checks if one box is found completely within another box.
-        eps      = 1e-5 # used to check for machine precision errors.        
+        eps      = 1e-5 # used to check for machine precision errors.
         if  other.minP.x - eps <= self.minP.x and \
             other.maxP.x + eps >= self.maxP.x and \
             other.minP.y - eps <= self.minP.y and \
@@ -171,7 +171,7 @@ class BoxT(object): # Creates a box object
             return( 1 )
         else:
             return( 2 )
-                        
+
     #@profile
     def spread(self): # calculates the dimensions of the box in x, y, and z-direction.
         return( [self.maxP.x - self.minP.x,
@@ -186,7 +186,7 @@ class BoxT(object): # Creates a box object
     #@profile
     def height(self): # defined as the shortest dimension (usually the aperture).
         return( sorted( self.spread() )[0])
-    #@profile    
+    #@profile
     def maxSpread(self): # returns the longest dimension of a box.
         return( max( float(self.maxP.x) - float(self.minP.x),
                      float(self.maxP.y) - float(self.minP.y),
@@ -196,8 +196,3 @@ class BoxT(object): # Creates a box object
         return("box.idx=" + str(self.idx)
             + "\tminP" + self.minP.str()
             + "\tmaxP" + self.maxP.str() )
-
-        
-        
-        
-
