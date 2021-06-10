@@ -13,5 +13,7 @@ dependencies:
   - scipy
   - graph-tool
   - pip
-#  - pip:
-#    - 
+  - pip:
+    - pytest
+	- coverage
+	- pytest-cov
