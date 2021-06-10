@@ -1,0 +1,22 @@
+For testing purposes, there are multiple prepared methods.
+
+pytest -v
+
+coverage run [python script]
+
+coverage report -m
+
+This will report the coverage and the lines of code which are unused.
+
+coverage html
+
+This will produce an interactive html to show the actual lines of code.
+
+
+using this on the test it shows the test coverage.
+
+This can be more accurately with pytest:
+
+pytest -v --cov=[python script] --cov-report=html
+
+
