@@ -1,0 +1,17 @@
+name: Hobe2018etal
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.8
+  - jupyter
+  - jupyterlab
+  - ipykernel
+  - matplotlib
+  - numpy
+  - pandas
+  - scipy
+  - graph-tool
+  - pip
+#  - pip:
+#    - 
