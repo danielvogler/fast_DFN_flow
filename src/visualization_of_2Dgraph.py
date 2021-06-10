@@ -1,38 +1,9 @@
-############################
-#
-# Copyright (c) 2015, 2016, 2017
-# ETH Swiss Federal Institute of Technology Zurich, Zurich, Switzerland and
-# University of Stuttgart, Stuttgart, Germany
-#
-# All rights reserved.
-#
-# Fast Methods in Discrete Fracture Networks, Version 1.0.0
-#
-# Written by:
-#     Martin P. Seybold - seybold(at)fmi.uni-stuttgart.de
-#     Daniel Vogler - davogler(at)ethz.ch
-#     Alex Hobe - ahobe(at)student.ethz.ch
-#
-# The copyright to the software herein is the property of
-# Daniel Vogler and Alex Hobe of ETH Swiss Federal Institute
-# of Technology Zurich, Zurich, Switzerland and Martin P. Seybold
-# of University of Stuttgart, Stuttgart, Germany.
-# The software may be used only with the written permission
-# of Martin P. Seybold or Daniel Vogler or in accordance with
-# the terms and conditions stipulated in the agreement/contract
-# under which the software has been supplied.
-#
-# Software is provided as is, without warranties of any kind,
-# express or implied, including warranties of merchantability or
-# fitness for a particular purpose. Software is provided without
-# representations of authorship or originality.
-#
-# This copyright notice must not be removed.
-#
-############################
+#! /usr/bin/python
 
-__author__ = "martin"
-__date__ = "$Jun 21, 2015 2:57:02 PM$"
+# Copyright:
+#   Alex Hobe
+#   Daniel Vogler
+#   Martin P. Seybold
 
 import numpy as np
 import graph_tool.all as gt     # import networkx as nx  # has mincost flow
@@ -123,16 +94,16 @@ max_flow = sum(res[e] for e in tgt.in_edges())    # the maximum flow is the sum 
 flowLabel = g.new_edge_property("string") # initialize label for the edges in the graph
 
 if abs(max_flow - 0.0)<eps:
-  print ""
-  print "Graph not connected. No percolation possible."
-  print ""
+  print( "" )
+  print( "Graph not connected. No percolation possible." )
+  print( "" )
   sys.exit()
 
 q= 0
 for v in g.vertices():  
   q=q+1
 
-print q
+print( q )
 
 
 
@@ -147,7 +118,7 @@ try: # plot GEOS flux and pressure values on edges and nodes
   Prel[Prel<0.0]=0.0
   v_P              = g.new_vertex_property("double") 
   v_Prel           = g.new_vertex_property("double") 
-  for i in xrange(len(P)):
+  for i in range(len(P)):
     v = g.vertex(vert_P[i])
     v_P[v]    = P[i]
     v_Prel[v] = Prel[i] 
@@ -158,13 +129,13 @@ try: # plot GEOS flux and pressure values on edges and nodes
     eSource  = csvFlux[1:,2]
     eTarget  = csvFlux[1:,3]
     e_max = len(edgeFlux)
-    print "Flux extracted from file."
+    print( "Flux extracted from file." )
 
-  print "Pressure extracted from file."
-  print ""
+  print( "Pressure extracted from file." )
+  print( "" )
  
 except Exception as e:
-  print "No pressure file found."
+  print( "No pressure file found." )
   ok = 0
 
 
@@ -174,7 +145,7 @@ if ok == 1:
     if j >1:     
       v_pressure_color[v] = [v_Prel[v],0.0, 1.0- v_Prel[v], 1.0]
       vLabel[v] = "{0:1.1f}".format(v_P[v]/1.0e6)
-      print v_P[v]
+      print( v_P[v] )
     elif j == 0:
       v_pressure_color[v] = [1.0, 0.0, 0.0, 1.0]
       
@@ -191,7 +162,7 @@ e_Qp       = g.new_edge_property("double")            # GEOS volumerate result u
 e_Qv       = g.new_edge_property("double")            # GEOS volumerate result using velocities over the fluxAreabox.
 
 if ok == 1 and (version == "seg" or version == "seg002") :
-  for i in xrange(e_max):
+  for i in range(e_max):
     e = g.edge(eSource[i], eTarget[i])
     e_Qv[e] = edgeFlux[i]
     if abs(width[e] - 0.02) < eps:
@@ -250,7 +221,7 @@ q= 0
 for v in g.vertices():
   q=q+1
 
-print q
+print( q )
 
 ##############################################################3
 ### Parameters used to draw simple algorithms.
@@ -291,13 +262,13 @@ gt.graph_draw(g, pos               = pos, # This draws the flow graph using the 
                  output_size       = (3000,3000) ) 
 
 
-print "Max flow result:"
+print( "Max flow result:" )
 if normalize==0:
-  print max_flow*cap_max # undoing the normalizaiton.
+  print( max_flow*cap_max ) # undoing the normalizaiton.
 elif normalize==1:
-  print max_flow         # keeping the normalization.
+  print( max_flow )         # keeping the normalization.
 
-print "remove edges without flow"
+print( "remove edges without flow" )
 noFlow = gt.find_edge_range(g, res, [0.0, eps])
 for s in noFlow:
   g.remove_edge(s)
@@ -322,14 +293,14 @@ for v in gCopy.vertices():
   posCopy[v] = pos[v]
   counter+=1
 
-print "amount of vertices", counter
+print( "amount of vertices", counter )
 counter = 0
 for e in gCopy.edges():  
   resCopy[e] = res[e]
   e_colorCopy[e] = e_color[e]
   counter+=1
 
-print "amount of edges", counter
+print( "amount of edges", counter )
 
 if not os.path.exists(workingDir + "Paths"):
           os.makedirs(workingDir + "Paths")
@@ -349,7 +320,7 @@ def pathFinder(gCopy, src, tgt, resCopy, cap):
   
   
   
-  for i in xrange(0,1000): # perhaps do a while loop instead. This should be safer...
+  for i in range(0,1000): # perhaps do a while loop instead. This should be safer...
     pLength    = []  # store lengths of this path
     pWidth     = []  # store widths of this path
     pAperture  = []  # store apertures of this path
@@ -361,9 +332,9 @@ def pathFinder(gCopy, src, tgt, resCopy, cap):
     vShort, eShort = tp.shortest_path(gCopy,src,tgt) # find shortest path
     
     if len(eShort) == 0: # no more path found
-      print "no more paths"
-      print "number of paths found: ", numPaths
-      print i
+      print( "no more paths" )
+      print( "number of paths found: ", numPaths )
+      print( i )
       return pathEdges, pathLength, pathWidth, pathFlow, pathAperture, pathCap, numPaths, pathFactors, pathLdiag, pathGrav  # return values
     
     else:
@@ -434,125 +405,4 @@ def pathFinder(gCopy, src, tgt, resCopy, cap):
 src, tgt = g.vertex(full_source), g.vertex(full_target)               # set the source and target nodes
 pathEdges, pathLength, pathWidth, pathFlow, pathAperture, pathCap, numPaths, pFactor, pathLdiag, pathGrav = pathFinder(gCopy, src, tgt, resCopy, cap)
 
-pathLdiag = np.array(pathLdiag)
 
-
-
-wMin  = []
-wMax  = []
-wHarm = []
-wSuperHarm = []
-Ltot  = []
-Lmin  = []
-Lmax  = []
-capHarm = []
-for n in xrange(numPaths):
-  wMin.append(np.min(pathWidth[n]))
-  wMax.append(np.max(pathWidth[n]))
-  Ltot.append(sum(pathLength[n]))
-  Lmin.append(np.min(pathLength[n]))
-  Lmax.append(np.max(pathLength[n]))
-
-print Ltot
-
-for i, path in enumerate(pathLength):
-  L = Ltot[i]
-  wWeighted       = 0.0
-  wSuperWeighted  = 0.0
-  capWeighted     = 0.0
-  eFactor = pFactor[i]
-  
-  for j,Li in enumerate(path):
-      wWeighted = wWeighted + Li/L*1.0/pathWidth[i][j]
-      wSuperWeighted = wSuperWeighted + Li/L*1.0/(pathWidth[i][j]*eFactor[j])
-      capWeighted = capWeighted + Li/L*1.0/pathCap[i][j]
-  
-  
-  wHarm.append(wWeighted**(-1))
-  wSuperHarm.append(wSuperWeighted**(-1))
-  capHarm.append(capWeighted**(-1))
- 
-wMin = np.array(wMin)
-
-
-wHarm       = np.array(wHarm)
-wSuperHarm  = np.array(wSuperHarm)
-capHarm     = np.array(capHarm)
-
-Ltot = np.array(Ltot)
-a=1.0e-5
-Kmin  = wMin*a**3/(12*mu*Ltot)
-Kharm = wHarm*a**3/(12*mu*Ltot)
-KSuperharm = wSuperHarm*a**3/(12*mu*Ltot)
-KSuperharm_short = wSuperHarm*a**3/(12*mu*10.6)
-KSuperharm_short2 = wSuperHarm*a**3/(12*mu*10.6)*Ltot/10.6
-KSuperharm_diagonal = wSuperHarm*a**3/(12*mu*np.sqrt(10.6*10.6 + 6.0*6.0))
-KSuperharm_diagonal2 = wSuperHarm*a**3/(12*mu*pathLdiag)
-KSuperharm_diagonal3 = wSuperHarm*a**3/(12*mu*np.sqrt(10.6*10.6 + 6.0*6.0+ 6.0*6.0))*Ltot/np.sqrt(10.6*10.6 + 6.0*6.0 + 6.0*6.0)
-KSuperharm_diagonal3 = wSuperHarm*a**3/(12*mu*np.sqrt(10.6*10.6 + 8.0*8.0+ 6.0*6.0))#*Ltot/np.sqrt(10.6*10.6 + 9.0*9.0)
-KSuperharm_short3 = wSuperHarm*a**3/(12*mu*Ltot)*10.6
-
-Qgrav = KSuperharm_diagonal2*np.array(pathGrav)
-KminTot = sum(Kmin)
-print "KminTot"
-print KminTot
-
-KharmTot = sum(Kharm)
-print "KharmTot"
-print KharmTot
-print ""
-
-KSuperharmTot = sum(KSuperharm)
-print "KSuperharmTot"
-print KSuperharmTot
-print ""
-
-KSuperharm_shortTot = sum(KSuperharm_short)
-print "KSuperharm_shortTot"
-print KSuperharm_shortTot
-print ""
-
-KSuperharm_shortTot2 = sum(KSuperharm_short2)
-print "KSuperharm_shortTot2"
-print KSuperharm_shortTot2
-print ""
-
-
-KSuperharm_shortTot3 = sum(KSuperharm_short3)
-print "KSuperharm_shortTot3"
-print KSuperharm_shortTot3
-print ""
-
-
-KSuperharm_diagonalTot = sum(KSuperharm_diagonal)
-print "KSuperharm_diagonalTot"
-print KSuperharm_diagonalTot
-print ""
-
-KSuperharm_diagonalTot2 = sum(KSuperharm_diagonal2)
-print "KSuperharm_diagonalTot2"
-print KSuperharm_diagonalTot2
-print ""
-
-KSuperharm_diagonalTot3 = sum(KSuperharm_diagonal3)
-print "KSuperharm_diagonalTot3"
-print KSuperharm_diagonalTot3
-print ""
-
-QgravTot = sum(Qgrav)
-print "QgravTot"
-print QgravTot
-print ""
-
-print "number of paths found: ", numPaths
-print ""
-
-total_flow = np.sum(pathFlow)
-print total_flow*cap_max
-
-if abs(max_flow - sum(pathFlow)) <= 1.0e-9:
-      print "max flow result equal to path flow result"
-else:
-      print "flow amount error!!"
-
-print cap_max
