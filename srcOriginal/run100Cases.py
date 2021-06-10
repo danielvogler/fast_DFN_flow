@@ -55,7 +55,7 @@ if saving == 1:
 	fileID = open(filename,'w'); # open file for writing; overwrite existing contents
 	fileID.write("simulation, Qgrav, numpaths, runtime [s], nVertices, nEdges  \n")
 
-for i in xrange(66,69):
+for i in range(66,69):
 	##########################
 	### Choosing cases
 	##########################
@@ -73,28 +73,27 @@ for i in xrange(66,69):
 	t = time.time()
 
 
-	
+
 	if segment == 1:
 		from HSPM_opt import *
 		Q, numPaths, nVertices, nEdges, tRead, tG1, tG2, tG3, tG4, tGraph, tMaxFlow, tBugFix, tPath  = segmentation(workingDir, inputFile)
 
 	if simpleWidth == 1:
 		from ISPM_opt import *
-		Q, numPaths, nVertices, nEdges, tRead, tG1, tG2, tG3, tG4, tGraph, tMaxFlow, tBugFix, tPath = simpleMethod(workingDir, inputFile)        
-	
+		Q, numPaths, nVertices, nEdges, tRead, tG1, tG2, tG3, tG4, tGraph, tMaxFlow, tBugFix, tPath = simpleMethod(workingDir, inputFile)
+
 	elapsed = time.time() - t
 
-	print inputFile
-	
+	print("Input file: {}".format( inputFile ) )
+
 
 	if saving == 1 and i>66:
 			fileID.write(inputFile +  ","  +"{0},".format(Q) + "{0},".format(numPaths) + "{0:.2f},".format(elapsed) + "{0},".format(nVertices) + "{0} \n".format(nEdges) )
-		
-	
-	print Q
-	print numPaths
-	print "{0:.2f}".format(elapsed) 
-	print ""
-if saving == 1:
-	fileID.close()
 
+
+	print("Flow rate: {}".format( Q ) )
+	print("Number of paths: {}".format( numPaths ) )
+	print("{0:.2f}".format(elapsed) )
+
+	if saving == 1:
+		fileID.close()
