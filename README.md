@@ -22,7 +22,7 @@ conda activate Hobe2018etal
 
 To always have access to this kernel in jupyter notebooks you can add (not required, but useful):
 ```bash
-python -m ipykernel install --user --name=indSeisHack
+python -m ipykernel install --user --name=Hobe2018etal
 ```
 
 To test the addition of new packages to the environment.yml file :
