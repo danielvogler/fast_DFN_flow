@@ -14,11 +14,13 @@
 
 
 import time
+from HSPM_opt import *
+from ISPM_opt import *
 
 saving 				= 0		# save results to file
 
-segment 			= 0 	# use HSPM
-simpleWidth 		= 1     # use ISPM
+segment 			= 1 	# use HSPM
+simpleWidth 		= 0     # use ISPM
 
 if saving == 1:
 	filename = 'ISPM_100_case_results_Quartz.txt'
@@ -46,12 +48,12 @@ for i in range(66,69):
 
 
 	if segment == 1:
-		from HSPM_opt import *
-		Q, numPaths, nVertices, nEdges, tRead, tG1, tG2, tG3, tG4, tGraph, tMaxFlow, tBugFix, tPath  = segmentation(workingDir, inputFile)
+		# Q, numPaths, nVertices, nEdges, tRead, tG1, tG2, tG3, tG4, tGraph, tMaxFlow, tBugFix, tPath  = segmentation(workingDir, inputFile)
+		Q, numPaths, nVertices, nEdges = segmentation(workingDir, inputFile)
 
 	if simpleWidth == 1:
-		from ISPM_opt import *
-		Q, numPaths, nVertices, nEdges, tRead, tG1, tG2, tG3, tG4, tGraph, tMaxFlow, tBugFix, tPath = simpleMethod(workingDir, inputFile)
+		# Q, numPaths, nVertices, nEdges, tRead, tG1, tG2, tG3, tG4, tGraph, tMaxFlow, tBugFix, tPath = simpleMethod(workingDir, inputFile)
+		Q, numPaths, nVertices, nEdges = simpleMethod(workingDir, inputFile)
 
 	elapsed = time.time() - t
 
@@ -64,6 +66,8 @@ for i in range(66,69):
 
 	print("Flow rate: {}".format( Q ) )
 	print("Number of paths: {}".format( numPaths ) )
+	print("Number of vertices: {}".format( nVertices ) )
+	print("Number of edges: {}".format( nEdges ) )
 	print("{0:.2f}".format(elapsed) )
 
 	if saving == 1:

@@ -339,6 +339,7 @@ def simpleMethod(workingDir, inputFile):
 
     tPath = time.time() - tPath
 
-    return QgravTot, numPaths, nVertices, nEdges, tRead, tG1, tG2, tG3, tG4, tGraph, tMaxFlow, tBugFix, tPath
+    # return QgravTot, numPaths, nVertices, nEdges, tRead, tG1, tG2, tG3, tG4, tGraph, tMaxFlow, tBugFix, tPath
+    return QgravTot, numPaths, nVertices, nEdges
     
 
