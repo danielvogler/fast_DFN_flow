@@ -1,43 +1,11 @@
-############################
-#
-# Copyright (c) 2015, 2016, 2017
-# ETH Swiss Federal Institute of Technology Zurich, Zurich, Switzerland and
-# University of Stuttgart, Stuttgart, Germany
-#
-# All rights reserved.
-#
-# Fast Methods in Discrete Fracture Networks, Version 1.0.0
-#
-# Written by:
-#     Martin P. Seybold - seybold(at)fmi.uni-stuttgart.de
-#     Daniel Vogler - davogler(at)ethz.ch
-#     Alex Hobe - ahobe(at)student.ethz.ch
-#
-# The copyright to the software herein is the property of
-# Daniel Vogler and Alex Hobe of ETH Swiss Federal Institute
-# of Technology Zurich, Zurich, Switzerland and Martin P. Seybold
-# of University of Stuttgart, Stuttgart, Germany.
-# The software may be used only with the written permission
-# of Martin P. Seybold or Daniel Vogler or in accordance with
-# the terms and conditions stipulated in the agreement/contract
-# under which the software has been supplied.
-#
-# Software is provided as is, without warranties of any kind,
-# express or implied, including warranties of merchantability or
-# fitness for a particular purpose. Software is provided without
-# representations of authorship or originality.
-#
-# This copyright notice must not be removed.
-#
-############################
-
 #! /usr/bin/python
 
-__author__ = "martin"
-__date__ = "$Jun 21, 2015 11:00:39 PM$"
+# Copyright:
+# 	Alex Hobe
+# 	Daniel Vogler
+# 	Martin P. Seybold
 
 from xml.dom import minidom
-#import box3D
 import numpy as np
 import graph_tool.all as gt # https://graph-tool.skewed.de/static/doc/index.html
 import graph_tool.topology as tp
@@ -222,7 +190,7 @@ def simpleMethod(workingDir, inputFile):
     ## Attach inlet and outlet to their respective intersections.
     ############################################################################################
     # only one direction is needed
-    for i in xrange(0,2):
+    for i in range(0,2):
         vInBox = verticesInBox[i]
         lV     = len(vInBox)
         oneArray = np.ones(lV)
@@ -264,10 +232,10 @@ def simpleMethod(workingDir, inputFile):
     max_flow = sum(res[e] for e in tgt.in_edges())    # the maximum flow is the sum of the individual paths
 
     if abs(max_flow)<eps:
-      	print ""
-      	print "Graph not connected. No percolation possible."
-      	print ""
-      	return 0.0, 0, nVertices, nEdges # Qvalue, number of paths.
+        print( "" )
+        print( "Graph not connected. No percolation possible." )
+        print( "" )
+        return 0.0, 0, nVertices, nEdges # Qvalue, number of paths.
     
     noFlow = gt.find_edge_range(g, res, [0.0, eps])
     for s in noFlow:
@@ -318,7 +286,7 @@ def simpleMethod(workingDir, inputFile):
       QgravTot     = 0.
       gravPart = 9.81*1000.
       
-      for i in xrange(0,1000): # perhaps do a while loop instead. This should be safer...
+      for i in range(0,1000): # perhaps do a while loop instead. This should be safer...
         pLength    = []  # store lengths of this path
         pWidth     = []  # store widths of this path
         pFactor    = []  # store flow factor of this path (percentage of the edge that this path uses).
