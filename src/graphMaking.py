@@ -24,7 +24,7 @@ def abstractGraphMaker(fracBoxes, graphType):
 	""" Set of methods, that create a graph out of the fracture geometries.
 	"""
 
-def makeGraph(abstractGraphMaker):
+def makeGraph(fracBoxes, graphType):
 	# TODO
 	# -rename graphType
 	# 	- nodeEdgeConvention
@@ -52,10 +52,11 @@ def makeGraph(abstractGraphMaker):
 	# return fracGraph
 	return g
 
-def segmentDomain( intCoordx, intCoordy, intCoordz ):
+def segmentDomain( intCoordx, intCoordy, intCoordz, nBoxes ):
 	# TODO
 	# - think about abstraction of this after refactoring ISPM version.
 	# - refactor further after testing
+    # - check the need for indLow[0][0]. This is very strange
 	
 	# Reduce intersect coordinate lists to unique coordinate values    
     xCoord = np.unique(intCoordx)  
@@ -66,53 +67,53 @@ def segmentDomain( intCoordx, intCoordy, intCoordz ):
     xID = []
     yID = []
     zID = []
-    for i in xrange(len(xCoord)-1):
+    for i in range(len(xCoord)-1):
         xID.append([])
 
-    for i in xrange(len(yCoord)-1):
+    for i in range(len(yCoord)-1):
         yID.append([])
 
-    for i in xrange(len(zCoord)-1):
+    for i in range(len(zCoord)-1):
         zID.append([])
 
 	# Find out which fractures lie on which intervals.
-    for i in xrange(2,nBoxes):                                # Go through all boxes
+    for i in range(2,nBoxes):                                # Go through all boxes
 
         # X-coordinate intervals
         indLow = np.where(xCoord == intCoordx[2*i])         # Find the index of the first interval using xMin
         indUp  = np.where(xCoord == intCoordx[2*i+1])       # Find the index of the last  interval using xMax
-        for j in xrange(indLow[0], indUp[0]):     # Add the current fracture number to all intervals between xMin and xMax
+        for j in range(indLow[0][0], indUp[0][0]):     # Add the current fracture number to all intervals between xMin and xMax
             xID[j].append(i) 
 
         # Y-coordinate intervals
         indLow = np.where(yCoord == intCoordy[2*i])         # Find the index of the first interval using yMin
         indUp  = np.where(yCoord == intCoordy[2*i+1])       # Find the index of the last  interval using yMax
-        for j in xrange(indLow[0], indUp[0]):     # Add the current fracture number to all intervals between yMin and yMax
+        for j in range(indLow[0][0], indUp[0][0]):     # Add the current fracture number to all intervals between yMin and yMax
             yID[j].append(i)
 
         # Z-coordinate intervals
         indLow = np.where(zCoord == intCoordz[2*i])         # Find the index of the first interval using yMin
         indUp  = np.where(zCoord == intCoordz[2*i+1])       # Find the index of the last  interval using yMax
-        for j in xrange(indLow[0], indUp[0]):     # Add the current fracture number to all intervals between yMin and yMax
+        for j in range(indLow[0][0], indUp[0][0]):     # Add the current fracture number to all intervals between yMin and yMax
             zID[j].append(i)
-	
-	return xID, yID, zID
+    
+    return xID, yID, zID, xCoord, yCoord, zCoord
 
 
 def initializeGraph( ):
 	# TODO
 	# - change centroid position of target?
 
-	g = gt.Graph() 
-	g.set_directed(True) 
-	cent  = g.new_vertex_property("vector<double>")   # node (centroid) coordinates for path positioning.
-    
-	# define source of the graph
+    g = gt.Graph() 
+    g.set_directed(True) 
+    cent  = g.new_vertex_property("vector<double>")   # node (centroid) coordinates for path positioning.
+
+    # define source of the graph
     vI = g.add_vertex()
     cent[ vI ]  = [0.0,0.0,0.0]
-    
+
     # define target of the graph
-    vI = g.add_vertex()                                    
+    vI = g.add_vertex()
     cent[ vI ]  = [0.0,0.0,0.0]
 
 	# Notes:
@@ -120,20 +121,20 @@ def initializeGraph( ):
 	# - Do not use set_fast_edge_removal! This changes edge ordering.
 	# 
 	
-	return g
+    return g
 
 def addFracSegmentNode( g,xID, yID, zID, xCoord, yCoord, zCoord ):
 	# TODO
 	# - think about abstraction of this after refactoring ISPM version.
 	# - refactor further after testing
 
-	# find the segments that lie on fractures and turn them into nodes.
-	nVertices  = 0
+    # find the segments that lie on fractures and turn them into nodes.
+    nVertices  = 0
     domainSegBoxes = [[],[],[]]
     segments = -1*np.ones((len(zCoord)-1, len(yCoord)-1,len(xCoord)-1))    
     vertsInBox = [[],[]] # lists which segments lie on a fracture
 
-	for i, xIDs in enumerate(xID):                 # sweep through x-coordinate intervals
+    for i, xIDs in enumerate(xID):                 # sweep through x-coordinate intervals
         for j, yIDs in enumerate(yID):             # find all segments that have lie on this x-coordinate slice
             yResult = set(xIDs) & set(yIDs)
             if not yResult:                        # an empty set is False. 
@@ -167,9 +168,9 @@ def addFracSegmentNode( g,xID, yID, zID, xCoord, yCoord, zCoord ):
                         elif i == len(xID)-1:
                             vertsInBox[1].append(nVertices)
                         nVertices +=1
-    nVertices += 2 # for source and target, which are not in vertsInBox
-	
-	return cent, vertsInBox, segments, domainSegBoxes
+    nVertices += 2 # for source and target, which are not in vertsInBox	
+
+    return cent, vertsInBox, segments, domainSegBoxes
 
 def addEdgesBetweenFracSegments( g,xCoord, yCoord, zCoord, segments, domainSegBoxes ):
 	# TODO
@@ -187,9 +188,9 @@ def addEdgesBetweenFracSegments( g,xCoord, yCoord, zCoord, segments, domainSegBo
     aCmC          = aperture**3/(mu*cubicLawConst)
 
     # Go through the domain and attach the nodes with edges.
-    for k in xrange(0,len(zCoord)-1):
-        for j in xrange(0,len(yCoord)-1):
-            for i in xrange(0,len(xCoord)-1):
+    for k in range(0,len(zCoord)-1):
+        for j in range(0,len(yCoord)-1):
+            for i in range(0,len(xCoord)-1):
                 seg = int(segments[k][j][i])  # get segment
                 if seg== -1:
                     continue
@@ -225,14 +226,14 @@ def addEdgesBetweenFracSegments( g,xCoord, yCoord, zCoord, segments, domainSegBo
     # Attach inlet and outlet to their respective intersections.
     e_length, e_width, cap, path_crit, nEdges = attachBoundaryNodes( vertsInBox )
 
-	return e_length, e_width, cap, path_crit, nEdges 
+    return e_length, e_width, cap, path_crit, nEdges 
 
 def connect_nodes( node1,node2,width, diff, DX, nEdges, aCmC ):
-	E_ps = 1.0e-9
+    E_ps = 1.0e-9
     # This part ignores the arbitrary value in the xml file by not connecting edges 
-	# with a width of diff.        
+    # with a width of diff.
     if abs(width - diff) <1.0e-13:       # Find edges with width == diff
-    	return nEdges # ignore this edge
+        return nEdges # ignore this edge
 
     v1, v2 = g.vertex(node1+2) ,  g.vertex(node2+2)         # Get the vertex labels for this vertex and the next vertex for this fracture.
     p1, p2 = cent[v1],cent[v2]   # Get the position of these two vertices.
@@ -264,13 +265,11 @@ def connect_nodes( node1,node2,width, diff, DX, nEdges, aCmC ):
 
     
     nEdges += 2
-
-
-	return nEdges
+    return nEdges
 
 def attachBoundaryNodes( vertsInBox ):
     # only one direction is needed
-    for i in xrange(0,2):
+    for i in range(0,2):
         for j in vertsInBox[i]:
             if i == 0:
                 v1, v2 = g.vertex(i) ,  g.vertex(j+2) # source to boundary
