@@ -12,68 +12,18 @@ import graph_tool.topology as tp
 import copy as cp
 import sys
 import time
+from getFracGeometries import *
 
 #@profile
 def simpleMethod(workingDir, inputFile):
-    tRead = time.time()    
-    xmldoc     = minidom.parse( workingDir + inputFile ) 
-    # Minidom is used here to cut the xml file into pieces (parsing), add/change data, and creating a new .gz file.
-    
-    # retrieve list of matching tags
-    itemlist = xmldoc.getElementsByTagName('Nodeset')
-    # Inside of the xml file the nodesets are given as follows:
-    # <Nodeset name="inlet" type="0"     
-    #          xmin="-0.01 -0.01 1.99"     
-    #          xmax="0.01 2.01 2.01" >
-    # With these 3 pairs of coordinates all 8 cornerpoints of a fracture are described. 
-    # The code above thus extracts these fracture coordinates from the xml file.
-    
+    tRead = time.time()  
+
     eps = 1.0e-9 # used for float comparison.
     aperture   = 1.0e-5
-    
-    # These commands initialize lists and the nBoxes counter which will be filled with the relevant information.
-    nBoxes   = 0
-    xCoord  = [[],[]] # fracture coordinates
-    yCoord  = [[],[]]
-    zCoord  = [[],[]]
-    verticesInBox = [] # lists which intersects lie on a fracture.
-    widthArray = []
-    longDimArray = []
-    dxArray = []
-    dyArray = []
-    dzArray = []
-    
-    for s in itemlist:
-    # Here we run through each fracture (nodeset) in itemlist.
-        x,y,z = s.attributes['xmin'].value.split()      # The minimum coordinates are extracted and 
-        xMin = float(x)
-        yMin = float(y)
-        zMin = float(z)
-        xCoord[0].append(xMin)
-        yCoord[0].append(yMin)
-        zCoord[0].append(zMin)
-        x,y,z = s.attributes['xmax'].value.split()      # same for maximum coordinates
-        xMax = float(x)
-        yMax = float(y)
-        zMax = float(z)
-        xCoord[1].append(xMax)
-        yCoord[1].append(yMax)
-        zCoord[1].append(zMax)
-        dx = xMax - xMin
-        dy = yMax - yMin
-        dz = zMax - zMin
-        vals = [dx,dy,dz]
-        index = np.argsort(vals) # sorts from smallest to largest and returns index
-        widthArray.append(vals[index[1]]) # second largest is the width
-        if   dx >= dy and dx >= dz:
-            lDim = 0
-        elif dy >= dx and dy >= dz:
-            lDim = 1
-        else:
-            lDim = 2
-        longDimArray.append(lDim)
-        verticesInBox.append( [] )    #init 
-        nBoxes  += 1
+
+    itemlist = getCoordListGEOSxml(workingDir + inputFile)   
+
+    xCoord, yCoord, zCoord, nBoxes, longDimArray, verticesInBox, widthArray = makeFracBoxGEOSxmlForISPM( itemlist )
             
     tRead = time.time()- tRead
     tGraph = time.time()

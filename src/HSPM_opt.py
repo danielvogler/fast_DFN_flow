@@ -7,6 +7,7 @@
 
 
 # TODO
+# - pack outputs into appropriate classes to reduce passing to one object
 
 
 
@@ -27,7 +28,8 @@ def segmentation(workingDir, inputFile):
     aperture   = 1.0e-5
     
     fileType = "GEOSxml"
-    
+
+    # get Fracture information
     intCoordx, intCoordy, intCoordz, nBoxes = getFractureBoxes( workingDir + inputFile, fileType )
 
 
