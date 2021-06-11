@@ -10,15 +10,11 @@
 # - pack outputs into appropriate classes to reduce passing to one object
 
 
-
-from xml.dom import minidom
 import numpy as np
-# import graph_tool.all as gt # https://graph-tool.skewed.de/static/doc/index.html
-# import graph_tool.topology as tp
-
 import copy as cp
 import sys
 from getFracGeometries import *
+from graphMaking import *
 from graphToolwrapper import *
 
 gt = graphToolwrapper.all()
@@ -44,46 +40,9 @@ def segmentation(workingDir, inputFile):
     ### Many of these segments will not correspond to a fracture.
     ############################################################################################
 
-    # Reduce intersect coordinate lists to unique coordinate values
-    xCoord = np.unique(intCoordx)
-    yCoord = np.unique(intCoordy)
-    zCoord = np.unique(intCoordz)
+    xID, yID, zID, xCoord, yCoord, zCoord = segmentDomain( intCoordx, intCoordy, intCoordz, nBoxes )
 
-
-    # Initiate interval ID's
-    xID = []
-    yID = []
-    zID = []
-    for i in range(len(xCoord)-1):
-        xID.append([])
-
-    for i in range(len(yCoord)-1):
-        yID.append([])
-
-    for i in range(len(zCoord)-1):
-        zID.append([])
-
-    # Find out which fractures lie on which intervals.
-    for i in range(2,nBoxes):                                # Go through all boxes
-
-        # X-coordinate intervals
-        indLow = np.where(xCoord == intCoordx[2*i])         # Find the index of the first interval using xMin
-        indUp  = np.where(xCoord == intCoordx[2*i+1])       # Find the index of the last  interval using xMax
-        for j in range(indLow[0][0], indUp[0][0]):     # Add the current fracture number to all intervals between xMin and xMax
-            xID[j].append(i)
-
-        # Y-coordinate intervals
-        indLow = np.where(yCoord == intCoordy[2*i])         # Find the index of the first interval using yMin
-        indUp  = np.where(yCoord == intCoordy[2*i+1])       # Find the index of the last  interval using yMax
-        for j in range(indLow[0][0], indUp[0][0]):     # Add the current fracture number to all intervals between yMin and yMax
-            yID[j].append(i)
-
-        # Z-coordinate intervals
-        indLow = np.where(zCoord == intCoordz[2*i])         # Find the index of the first interval using yMin
-        indUp  = np.where(zCoord == intCoordz[2*i+1])       # Find the index of the last  interval using yMax
-        for j in range(indLow[0][0], indUp[0][0]):     # Add the current fracture number to all intervals between yMin and yMax
-            zID[j].append(i)
-
+    
     ############################################################################################
     ### graph creation
     ############################################################################################
