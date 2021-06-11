@@ -17,12 +17,10 @@ import graph_tool.all as gt # https://graph-tool.skewed.de/static/doc/index.html
 import graph_tool.topology as tp
 import copy as cp
 import sys
-import time
 from getFracGeometries import *
 
 def segmentation(workingDir, inputFile):
 
-    tRead = time.time()
 
     eps        = 1.0e-13 # used to check for machine precision errors.
     aperture   = 1.0e-5
@@ -33,34 +31,13 @@ def segmentation(workingDir, inputFile):
     intCoordx, intCoordy, intCoordz, nBoxes = getFractureBoxes( workingDir + inputFile, fileType )
 
 
-    
     diff = 2*aperture # needed after this point
-
-    readMeshList = 0
-    if readMeshList == 1:
-        # Read in domain size and discretization.
-        meshList = xmldoc.getElementsByTagName('Mesh')
-        for m in meshList:
-            xMinDomain, xMaxDomain = m.attributes['xcoords'].value.split()
-            yMinDomain, yMaxDomain = m.attributes['ycoords'].value.split()
-            zMinDomain, zMaxDomain = m.attributes['zcoords'].value.split()
-            nx                     = m.attributes['nx'].value
-            ny                     = m.attributes['ny'].value
-            nz                     = m.attributes['nz'].value
-            DX                     = (float(xMaxDomain) - float(xMinDomain))/int(nx)
-            DY                     = (float(yMaxDomain) - float(yMinDomain))/int(ny)
-            DZ                     = (float(zMaxDomain) - float(zMinDomain))/int(nz)
-
     DX = 0.2
-    tRead = time.time()- tRead
 
-    tGraph = time.time()
     ############################################################################################
     ### Segmenting the entire domain using the outer coordinates of the fracture intersections
     ### Many of these segments will not correspond to a fracture.
     ############################################################################################
-
-    tG1 = time.time()
 
     # Reduce intersect coordinate lists to unique coordinate values
     xCoord = np.unique(intCoordx)
@@ -102,8 +79,6 @@ def segmentation(workingDir, inputFile):
         for j in range(indLow[0][0], indUp[0][0]):     # Add the current fracture number to all intervals between yMin and yMax
             zID[j].append(i)
 
-    tG1 = time.time() - tG1
-    tG2 = time.time()
     ############################################################################################
     ### graph creation
     ############################################################################################
@@ -163,8 +138,6 @@ def segmentation(workingDir, inputFile):
                         nVertices +=1
     nVertices += 2
 
-    tG2 = time.time() - tG2
-    tG3 = time.time()
 
     ############################################################################################
     ### Connecting domain segments that lie inside a fracture
@@ -256,8 +229,6 @@ def segmentation(workingDir, inputFile):
     cap_max = max(cap.a[capIndex])
     cap.a[capIndex] /= cap_max
 
-    tG3 = time.time() - tG3
-    tG4 = time.time()
 
     ############################################################################################
     ## Attach inlet and outlet to their respective intersections.
@@ -279,14 +250,9 @@ def segmentation(workingDir, inputFile):
             path_crit[e] = 0.0                     # criterion for finding the shortest path
             nEdges += 1
 
-    tG4 = time.time() - tG4
-
-    tGraph = time.time() -tGraph
     ############################################################################################
     ## Graph interpretation starts here
     ############################################################################################
-
-    tMaxFlow = time.time()
 
     # solving the max flow problem
     full_source = 0
@@ -300,15 +266,10 @@ def segmentation(workingDir, inputFile):
       print( "\nGraph not connected. No percolation possible.\n")
       return 0.0, 0, nVertices, nEdges # Qvalue, number of paths.
 
-    tCurrent = time.time()
-
     noFlow = gt.find_edge_range(g, res, [0.0, eps])
     for s in noFlow:
         g.remove_edge(s)
 
-    tMaxFlow = time.time() - tMaxFlow
-
-    tBugFix = time.time()
     for e in g.edges():
         eSrc = e.source()
         eTgt = e.target()
@@ -331,9 +292,6 @@ def segmentation(workingDir, inputFile):
     noFlow = gt.find_edge_range(g, res, [0.0, eps])
     for s in noFlow:
         g.remove_edge(s)
-
-    tBugFix = time.time() -tBugFix
-    tPath = time.time()
 
     ############################################################################################
     ### Get path information
@@ -406,7 +364,4 @@ def segmentation(workingDir, inputFile):
 
     QgravTot, numPaths   = pathFinder(g, src, tgt, res, path_crit, aCmC)
 
-    tPath = time.time() - tPath
-
-    # return QgravTot, numPaths, nVertices, nEdges, tRead, tG1, tG2, tG3, tG4, tGraph, tMaxFlow, tBugFix, tPath
     return QgravTot, numPaths, nVertices, nEdges
