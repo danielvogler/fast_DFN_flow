@@ -12,7 +12,11 @@
 
 import sys # import sys.exit only?
 import numpy as np
-import graph_tool.all as gt # https://graph-tool.skewed.de/static/doc/index.html
+# import graph_tool.all as gt # https://graph-tool.skewed.de/static/doc/index.html
+
+from graphToolwrapper import *
+
+gt = graphToolwrapper.all()
 
 
 
