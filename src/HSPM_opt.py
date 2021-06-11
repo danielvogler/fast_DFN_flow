@@ -13,11 +13,16 @@
 
 from xml.dom import minidom
 import numpy as np
-import graph_tool.all as gt # https://graph-tool.skewed.de/static/doc/index.html
-import graph_tool.topology as tp
+# import graph_tool.all as gt # https://graph-tool.skewed.de/static/doc/index.html
+# import graph_tool.topology as tp
+
 import copy as cp
 import sys
 from getFracGeometries import *
+from graphToolwrapper import *
+
+gt = graphToolwrapper.all()
+tp = graphToolwrapper.topology()
 
 def segmentation(workingDir, inputFile):
 
