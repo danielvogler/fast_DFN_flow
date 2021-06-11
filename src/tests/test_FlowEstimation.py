@@ -4,6 +4,9 @@ sys.path.insert(1, '../')
 from HSPM_opt import segmentation
 from ISPM_opt import simpleMethod
 
+if __name__ == '__main__':
+	unittest.main()
+
 class Test2Dcase(unittest.TestCase):
 	# better to use a separate file specifically for testing
 
@@ -79,8 +82,3 @@ class Test3Dcase(unittest.TestCase):
 
 
 
-		
-#		Q, numPaths, nVertices, nEdges = segmentation(workingDir, inputFile)
-
-if __name__ == '__main__':
-	unittest.main()

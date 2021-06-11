@@ -17,43 +17,21 @@ import graph_tool.topology as tp
 import copy as cp
 import sys
 import time
+from getFracGeometries import *
 
 def segmentation(workingDir, inputFile):
 
     tRead = time.time()
 
-    xmldoc     = minidom.parse( workingDir + inputFile )
-    # Minidom is used here to cut the xml file into pieces (parsing), add/change data, and creating a new .gz file.
     eps        = 1.0e-13 # used to check for machine precision errors.
     aperture   = 1.0e-5
-    diff       = 0.01 - aperture  # used to adjust the arbitrary overlap to capture the nodes in GEOS.
+    
+    fileType = "GEOSxml"
+    
+    intCoordx, intCoordy, intCoordz, nBoxes = getFractureBoxes( workingDir + inputFile, fileType )
 
-    # retrieve list of matching tags
-    itemlist = xmldoc.getElementsByTagName('Nodeset')
-    # Inside of the xml file the nodesets are given as follows:
-    # <Nodeset name="inlet" type="0"
-    #          xmin="-0.01 -0.01 1.99"
-    #          xmax="0.01 2.01 2.01" >
-    # With these 3 pairs of coordinates all 8 cornerpoints of a fracture are described.
-    # The code above thus extracts these fracture coordinates from the xml file.
 
-    # These commands initialize lists and the nBoxes counter which will be filled with the relevant information.
-    nBoxes   = 0
-    intCoordx = []  # holds the minimum and maximum x-coordinates of the segments
-    intCoordy = []  # holds the minimum and maximum y-coordinates of the segments
-    intCoordz = []  # holds the minimum and maximum z-coordinates of the segments
-
-    for s in itemlist:
-    # Here we run through each fracture (nodeset) in itemlist.
-        x,y,z = s.attributes['xmin'].value.split()      # The minimum coordinates are extracted and
-        intCoordx.append(float(x) + diff)                             # added to the coordinate lists
-        intCoordy.append(float(y) + diff)
-        intCoordz.append(float(z) + diff)
-        x,y,z = s.attributes['xmax'].value.split()      # same for maximum coordinates
-        intCoordx.append(float(x) - diff)
-        intCoordy.append(float(y) - diff)
-        intCoordz.append(float(z) - diff)
-        nBoxes  += 1
+    
     diff = 2*aperture # needed after this point
 
     readMeshList = 0
