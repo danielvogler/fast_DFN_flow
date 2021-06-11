@@ -11,13 +11,10 @@ import graph_tool.all as gt # https://graph-tool.skewed.de/static/doc/index.html
 import graph_tool.topology as tp
 import copy as cp
 import sys
-import time
 from getFracGeometries import *
 
 #@profile
 def simpleMethod(workingDir, inputFile):
-    tRead = time.time()  
-
     eps = 1.0e-9 # used for float comparison.
     aperture   = 1.0e-5
 
@@ -25,10 +22,6 @@ def simpleMethod(workingDir, inputFile):
 
     xCoord, yCoord, zCoord, nBoxes, longDimArray, verticesInBox, widthArray = makeFracBoxGEOSxmlForISPM( itemlist )
             
-    tRead = time.time()- tRead
-    tGraph = time.time()
-    tG1 = time.time()
-        
     # intersect boxes to retain vertices 
     vertexPos  = []
     vertexPos.append([-0.3,5,5])
@@ -68,13 +61,10 @@ def simpleMethod(workingDir, inputFile):
                 xCent = 0.5*(xIntMax+xIntMin)
                 yCent = 0.5*(yIntMax+yIntMin)
                 zCent = 0.5*(zIntMax+zIntMin)
-                vertexPos.append( [xCent, yCent, zCent] ) # saves the ceter point (node) coordinates
+                vertexPos.append( [xCent, yCent, zCent] ) # saves the center point (node) coordinates
                 nVertices +=1
     g.add_vertex(nVertices)   # Initializing all intersection vertices
     
-    tG1 = time.time() - tG1
-    tG2 = time.time()     
-        
 
     nEdges = 0 # count edge number    
     mu            = 0.001
@@ -123,18 +113,10 @@ def simpleMethod(workingDir, inputFile):
         g.add_edge_list(zip(*edgeList), eprops=eprops)
         nEdges += 2*nVinFrac
  
-    tG2 = time.time() - tG2
-    tG3 = time.time()
-    
     # Normalize to avoid numerical precision issues.
     capIndex = np.where(cap.a < 99)
     cap_max = max(cap.a[capIndex])
     cap.a[capIndex] /= cap_max
-
-
-    tG3 = time.time() - tG3     
-    tG4 = time.time()
-    
 
     ############################################################################################
     ## Attach inlet and outlet to their respective intersections.
@@ -166,12 +148,6 @@ def simpleMethod(workingDir, inputFile):
     ############################################################################################
     ## Graph interpretation starts here
     ############################################################################################ 
-
-    tG4 = time.time() - tG4
-
-    # print "Graph time: ", time.time() -tGraph
-    tGraph = time.time() -tGraph
-    tMaxFlow = time.time() 
     
     # solving the max flow problem
     full_source = 0
@@ -191,10 +167,6 @@ def simpleMethod(workingDir, inputFile):
     for s in noFlow:
       g.remove_edge(s)
 
-    tMaxFlow = time.time() - tMaxFlow
-
-    
-    tBugFix = time.time()
     for e in g.edges():
         eSrc = e.source() 
         eTgt = e.target()
@@ -218,13 +190,6 @@ def simpleMethod(workingDir, inputFile):
     for s in noFlow:
       g.remove_edge(s)
 
-    tBugFix = time.time() -tBugFix
-    
-    
-    
-    
-    tPath = time.time()
-    
     ############################################################################################
     ### Get path information
     ############################################################################################
@@ -287,9 +252,6 @@ def simpleMethod(workingDir, inputFile):
     
     QgravTot, numPaths = pathFinder(g, src, tgt, res, path_crit, aCmC)
 
-    tPath = time.time() - tPath
-
-    # return QgravTot, numPaths, nVertices, nEdges, tRead, tG1, tG2, tG3, tG4, tGraph, tMaxFlow, tBugFix, tPath
     return QgravTot, numPaths, nVertices, nEdges
     
 
