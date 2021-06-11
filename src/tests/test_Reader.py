@@ -24,6 +24,27 @@ class TestReaders(unittest.TestCase):
 		self.assertEqual( intCoordy, yCheck )
 		self.assertEqual( intCoordz, zCheck )
 		self.assertEqual( nBoxes, nCheck )
+	
+	def test_getFractureBoxesISPM(self):
+		# when
+		itemlist = getCoordListGEOSxml(self.geosXMLinputFile)
+		xCoord, yCoord, zCoord, nBoxes, longDimArray, verticesInBox, widthArray = makeFracBoxGEOSxmlForISPM( itemlist )       
+		
+		# then
+		xCheck = [[-0.41, 10.19], [-0.19, 10.41]]
+		yCheck = [[-0.01, -0.01], [10.01, 10.01]]
+		zCheck = [[-0.01, -0.01], [10.01, 10.01]]
+		nCheck = 2
+		longDimCheck = [1, 1] 
+		verticesCheck = [[], []] 
+		widthCheck = [10.02, 10.02]
+		self.assertEqual( xCoord, xCheck )
+		self.assertEqual( yCoord, yCheck )
+		self.assertEqual( zCoord, zCheck )
+		self.assertEqual( nBoxes, nCheck )
+		self.assertEqual( longDimArray, longDimCheck )
+		self.assertEqual( verticesInBox, verticesCheck )
+		self.assertEqual( widthArray, widthCheck )
 
 	# def test_getCoordListGEOSxml(self):
 	#	# No idea how to test this, other than the previous test.
