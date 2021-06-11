@@ -1,7 +1,6 @@
 # fast_DFN_flow
 
 ### Needed
-- wrapper for graph-tool to invert dependency
 - refactoring
 
 
