@@ -46,18 +46,9 @@ def segmentation(workingDir, inputFile):
     ############################################################################################
     ### graph creation
     ############################################################################################
-    g = gt.Graph()          # Initialize a new gt graph.
-    g.set_directed(True)    # directed graphs have separate amounts for flow in each direction.
+    g = initializeGraph( )
+    cent = g.vertex_properties["cent"]     # extracts the coordinates of the vertices for the tortuosity calculations.
 
-    cent  = g.new_vertex_property("vector<double>")   # node (centroid) coordinates for path positioning.
-
-    # define source of the graph
-    vI = g.add_vertex()
-    cent[ vI ]  = [0.0,0.0,0.0]
-
-    # define target of the graph
-    vI = g.add_vertex()
-    cent[ vI ]  = [0.0,0.0,0.0]
 
     # find the segments that lie on fractures and turn them into nodes.
     nVertices  = 0

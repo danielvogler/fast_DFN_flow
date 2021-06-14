@@ -106,15 +106,15 @@ def initializeGraph( ):
 
     g = gt.Graph() 
     g.set_directed(True) 
-    cent  = g.new_vertex_property("vector<double>")   # node (centroid) coordinates for path positioning.
+    g.vertex_properties["cent"]  = g.new_vertex_property("vector<double>")   # node (centroid) coordinates for path positioning.
 
     # define source of the graph
     vI = g.add_vertex()
-    cent[ vI ]  = [0.0,0.0,0.0]
+    g.vertex_properties["cent"][ vI ]  = [0.0,0.0,0.0]
 
     # define target of the graph
     vI = g.add_vertex()
-    cent[ vI ]  = [0.0,0.0,0.0]
+    g.vertex_properties["cent"][ vI ]  = [0.0,0.0,0.0]
 
 	# Notes:
 	# - Directed graphs have separate amounts for flow in each direction.
@@ -286,6 +286,9 @@ def attachBoundaryNodes( vertsInBox ):
             nEdges += 1
 
     return e_length, e_width, cap, path_crit, nEdges
+
+def saveGraph(OutFileID):
+    g.save( OutFileID )
 
 
 
