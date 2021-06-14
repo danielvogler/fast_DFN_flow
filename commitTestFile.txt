@@ -1,6 +1,0 @@
-Creating a file to test my commit.
-Changed something
-and another thing
-
-Changing in two places to test merge tool.
-Test worked properly!
