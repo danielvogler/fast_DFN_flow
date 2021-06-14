@@ -1,9 +1,0 @@
-Creating a file to test my commit.
-Changed something
-and another thing
-
-<<<<<<< HEAD
-Testing mergeTool
-=======
-Changing in two places to test merge tool.
->>>>>>> 572d97e54f0f79d91cff388bac7e236b06156c56
