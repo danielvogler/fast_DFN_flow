@@ -100,7 +100,7 @@ def segmentDomain( intCoordx, intCoordy, intCoordz, nBoxes ):
     return xID, yID, zID, xCoord, yCoord, zCoord
 
 
-def initializeGraph( ):
+def initializeGraph( sourceTargetCentroids ):
 	# TODO
 	# - change centroid position of target?
 
@@ -110,11 +110,11 @@ def initializeGraph( ):
 
     # define source of the graph
     vI = g.add_vertex()
-    g.vertex_properties["cent"][ vI ]  = [0.0,0.0,0.0]
+    g.vertex_properties["cent"][ vI ]  = sourceTargetCentroids[0]
 
     # define target of the graph
     vI = g.add_vertex()
-    g.vertex_properties["cent"][ vI ]  = [0.0,0.0,0.0]
+    g.vertex_properties["cent"][ vI ]  = sourceTargetCentroids[1]
 
 	# Notes:
 	# - Directed graphs have separate amounts for flow in each direction.

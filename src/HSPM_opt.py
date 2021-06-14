@@ -46,7 +46,8 @@ def segmentation(workingDir, inputFile):
     ############################################################################################
     ### graph creation
     ############################################################################################
-    g = initializeGraph( )
+    sourceTargetCentroids = [[0.0,0.0,0.0],[0.0,0.0,0.0]]
+    g = initializeGraph( sourceTargetCentroids )
     cent = g.vertex_properties["cent"]     # extracts the coordinates of the vertices for the tortuosity calculations.
 
 

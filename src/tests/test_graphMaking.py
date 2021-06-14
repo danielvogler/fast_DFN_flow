@@ -14,6 +14,7 @@ class TestGraohMaking(unittest.TestCase):
 		self.intCoordy = [-9.999999999999593e-06, 10.00001, -9.999999999999593e-06, 10.00001]
 		self.intCoordz = [-9.999999999999593e-06, 10.00001, -9.999999999999593e-06, 10.00001]
 		self.nBoxes = 2
+	
 	def test_segmentDomain(self):
 		# when
 		xID, yID, zID, xCoord, yCoord, zCoord = segmentDomain( self.intCoordx, self.intCoordy, self.intCoordz, self.nBoxes )
@@ -31,3 +32,21 @@ class TestGraohMaking(unittest.TestCase):
 		self.assertEqual( xCoord.all(), xCheck.all() )
 		self.assertEqual( yCoord.all(), yCheck.all() )
 		self.assertEqual( zCoord.all(), zCheck.all() )
+
+	def test_initializeGraph(self):
+		# given
+		sourceTargetCentroids = [[0.0,0.0,0.0],[0.0,0.0,0.0]]
+		g = initializeGraph( sourceTargetCentroids )
+
+		# then
+		cent = g.vertex_properties["cent"]
+		self.assertEqual(sourceTargetCentroids[0], cent[0])
+		self.assertEqual(sourceTargetCentroids[1], cent[1])
+
+
+
+
+
+
+
+
