@@ -161,7 +161,7 @@ def addFracSegmentNode( g,xID, yID, zID, xCoord, yCoord, zCoord ):
 
                         segments[k][j][i] = nVertices
                         vI = g.add_vertex()
-                        cent[ vI ]  = [xCent, yCent, zCent]
+                        g.vertex_properties["cent"] [ vI ]  = [xCent, yCent, zCent]
 
                         if i == 0:
                             vertsInBox[0].append(nVertices)
@@ -169,19 +169,21 @@ def addFracSegmentNode( g,xID, yID, zID, xCoord, yCoord, zCoord ):
                             vertsInBox[1].append(nVertices)
                         nVertices +=1
     nVertices += 2 # for source and target, which are not in vertsInBox	
+    # cent = g.vertex_properties["cent"]
 
-    return cent, vertsInBox, segments, domainSegBoxes
 
-def addEdgesBetweenFracSegments( g,xCoord, yCoord, zCoord, segments, domainSegBoxes ):
+    return vertsInBox, segments, domainSegBoxes, nVertices
+
+def addEdgesBetweenFracSegments( g,xCoord, yCoord, zCoord, segments, domainSegBoxes, aperture, diff, DX, vertsInBox ):
 	# TODO
 	# - think about abstraction of this after refactoring ISPM version.
 	# - refactor further after testing
+    # - Attach properties to graph and pass graph around
 
     # initialize 
-    e_length      = g.new_edge_property("double")
-    e_width       = g.new_edge_property("double")
-    cap           = g.new_edge_property("double")      # capacity for flow in each edge
-    path_crit     = g.new_edge_property("double")      # criterion for finding the shortest path
+    properties = [["e_length", "e_width", "cap", "path_crit"],
+                  ["double", "double", "double", "double"]]
+    g = makeNewEdgeProperty( g, properties )
     nEdges        = 0
     mu            = 0.001
     cubicLawConst = 12
@@ -204,31 +206,48 @@ def addEdgesBetweenFracSegments( g,xCoord, yCoord, zCoord, segments, domainSegBo
                         segright = int(segments[k][j][i+1])
                         if segright !=-1: # connect these
                             width = max(dy,dz)
-                            nEdges = connect_nodes(seg,segright,width, diff, DX, nEdges, aCmC)
+                            nEdges = connect_nodes(g, seg,segright,width, diff, DX, nEdges, aCmC)
     
                     if j<len(yCoord)-2:
                         segback  = int(segments[k][j+1][i])
                         if segback !=-1: # connect these
                             width = max(dx,dz)
-                            nEdges = connect_nodes(seg,segback,width, diff, DX, nEdges, aCmC)
+                            nEdges = connect_nodes(g, seg,segback,width, diff, DX, nEdges, aCmC)
     
                     if k<len(zCoord)-2:
                         segup    = int(segments[k+1][j][i])
                         if segup !=-1: # connect these
                             width = max(dx,dy)
-                            nEdges = connect_nodes(seg,segup,width, diff, DX, nEdges, aCmC)
+                            nEdges = connect_nodes(g, seg,segup,width, diff, DX, nEdges, aCmC)
 
     # Normalize to avoid numerical precision issues.
+    cap           = g.edge_properties["cap"]      # capacity for flow in each edge
     capIndex = np.where(cap.a < 99)
     cap_max = max(cap.a[capIndex])
     cap.a[capIndex] /= cap_max
 
     # Attach inlet and outlet to their respective intersections.
-    e_length, e_width, cap, path_crit, nEdges = attachBoundaryNodes( vertsInBox )
+    e_length, e_width, cap, path_crit, nEdges = attachBoundaryNodes( g, vertsInBox, nEdges )
 
-    return e_length, e_width, cap, path_crit, nEdges 
+    return e_length, e_width, cap, path_crit, nEdges, aCmC 
 
-def connect_nodes( node1,node2,width, diff, DX, nEdges, aCmC ):
+
+def makeNewEdgeProperty( g, properties):
+    for i, iName in enumerate(properties[0]):
+        g.edge_properties[iName] = g.new_edge_property(properties[1][i])
+    return g
+
+
+def connect_nodes( g, node1, node2, width, diff, DX, nEdges, aCmC ):
+    #TODO 
+    # - graph parts need to be imported and exported.
+
+    cent = g.vertex_properties["cent"] 
+    e_length      = g.edge_properties["e_length"]
+    e_width       = g.edge_properties["e_width"]
+    cap           = g.edge_properties["cap"]      # capacity for flow in each edge
+    path_crit     = g.edge_properties["path_crit"]      # criterion for finding the shortest path
+
     E_ps = 1.0e-9
     # This part ignores the arbitrary value in the xml file by not connecting edges 
     # with a width of diff.
@@ -267,7 +286,15 @@ def connect_nodes( node1,node2,width, diff, DX, nEdges, aCmC ):
     nEdges += 2
     return nEdges
 
-def attachBoundaryNodes( vertsInBox ):
+def attachBoundaryNodes( g, vertsInBox, nEdges ):
+
+    e_length      = g.edge_properties["e_length"]
+    e_width       = g.edge_properties["e_width"]
+    cap           = g.edge_properties["cap"]      # capacity for flow in each edge
+    path_crit     = g.edge_properties["path_crit"]      # criterion for finding the shortest path
+
+
+
     # only one direction is needed
     for i in range(0,2):
         for j in vertsInBox[i]:

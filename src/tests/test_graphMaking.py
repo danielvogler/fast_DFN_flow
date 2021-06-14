@@ -43,6 +43,17 @@ class TestGraohMaking(unittest.TestCase):
 		self.assertEqual(sourceTargetCentroids[0], cent[0])
 		self.assertEqual(sourceTargetCentroids[1], cent[1])
 
+	# def test_addFracSegmentNode(self):
+	# 	# create a simple test graph.gz file to test this function.
+	# 	# Start with bm54_f17_3 for now.
+
+	# 	# given
+	# 	name    = "bm54_f17_3_Graph_seg.xml.gz"
+	# 	workingDir      = "../../benchmark/bm54_f17/plot/"
+	# 	g = gt.Graph()
+	# 	g.load( inputFile )
+	# 	vertsInBox, segments, domainSegBoxes, nVertices = addFracSegmentNode( g,xID, yID, zID, xCoord, yCoord, zCoord )
+
 
 
 
