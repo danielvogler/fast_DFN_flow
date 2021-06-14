@@ -12,6 +12,7 @@ import numpy as np
 import copy as cp
 import sys
 from getFracGeometries import *
+from graphMaking import *
 from graphToolwrapper import *
 
 gt = graphToolwrapper.all()
@@ -33,17 +34,26 @@ def simpleMethod(workingDir, inputFile):
  
 
     # build graph
-    g = gt.Graph()  # Initialize a new gt graph.
-    g.set_directed(True) # directed graphs have separate amounts for flow in each direction.
+    # g = gt.Graph()  # Initialize a new gt graph.
+    # g.set_directed(True) # directed graphs have separate amounts for flow in each direction.
+    sourceTargetCentroids = [   [-0.3, 5, 5],
+                                [10.3, 5, 5]
+                            ]
+    g = initializeGraph( sourceTargetCentroids )
     
 
     nVertices  = 2
+
+    properties = [  ["e_length", "e_width", "cap", "path_crit"],
+                    ["double", "double", "double", "double"]
+                  ]
+    g = makeNewEdgeProperty( g, properties )
+    e_length      = g.edge_properties["e_length"]
+    e_width       = g.edge_properties["e_width"]
+    cap           = g.edge_properties["cap"]      # capacity for flow in each edge
+    path_crit     = g.edge_properties["path_crit"]
     
     # calculate edges, edge lengths and box widths
-    e_length  = g.new_edge_property("double")
-    e_width   = g.new_edge_property("double")
-    cap       = g.new_edge_property("double")      # capacity for flow in each edge
-    path_crit = g.new_edge_property("double")      # criterion for finding the shortest path
     
     for i in range( 0, nBoxes ):
         xFracMin = xCoord[0][i]

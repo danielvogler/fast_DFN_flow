@@ -232,7 +232,7 @@ def addEdgesBetweenFracSegments( g,xCoord, yCoord, zCoord, segments, domainSegBo
     return e_length, e_width, cap, path_crit, nEdges, aCmC 
 
 
-def makeNewEdgeProperty( g, properties):
+def makeNewEdgeProperty( g, properties ):
     for i, iName in enumerate(properties[0]):
         g.edge_properties[iName] = g.new_edge_property(properties[1][i])
     return g
