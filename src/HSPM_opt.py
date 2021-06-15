@@ -7,7 +7,9 @@
 
 
 # TODO
-# - pack outputs into appropriate classes to reduce passing to one object
+# - reduce to functions to see which pieces need to be packed together
+# - pack outputs into appropriate classes to reduce passing of arguments to a single object
+# - identify when the graph should be initialized for using it effectively as a container
 
 
 import numpy as np
@@ -40,23 +42,31 @@ def segmentation(workingDir, inputFile):
     ### Many of these segments will not correspond to a fracture.
     ############################################################################################
 
-    xID, yID, zID, xCoord, yCoord, zCoord = segmentDomain( intCoordx, intCoordy, intCoordz, nBoxes )
+    # xID, yID, zID, xCoord, yCoord, zCoord = segmentDomain( intCoordx, intCoordy, intCoordz, nBoxes )
 
     
-    ############################################################################################
-    ### graph creation
-    ############################################################################################
-    sourceTargetCentroids = [[0.0,0.0,0.0],[0.0,0.0,0.0]]
-    g = initializeGraph( sourceTargetCentroids )
+    # ############################################################################################
+    # ### graph creation
+    # ############################################################################################
+    # sourceTargetCentroids = [[0.0,0.0,0.0],[0.0,0.0,0.0]]
+    # g = initializeGraph( sourceTargetCentroids )
 
 
-    vertsInBox, segments, domainSegBoxes, nVertices = addFracSegmentNode( g,xID, yID, zID, xCoord, yCoord, zCoord )
-    # g is changed here without needing to be returned by the function.
-    # this is not "clean code" best practice...
-    cent = g.vertex_properties["cent"]  
+    # vertsInBox, segments, domainSegBoxes, nVertices = addFracSegmentNode( g,xID, yID, zID, xCoord, yCoord, zCoord )
+    # # g is changed here without needing to be returned by the function.
+    # # this is not "clean code" best practice...
+      
 
 
-    e_length, e_width, cap, path_crit, nEdges, aCmC = addEdgesBetweenFracSegments( g,xCoord, yCoord, zCoord, segments, domainSegBoxes, aperture, diff, DX, vertsInBox )
+    # e_length, e_width, cap, path_crit, nEdges, aCmC = addEdgesBetweenFracSegments( g,xCoord, yCoord, zCoord, segments, domainSegBoxes, aperture, diff, DX, vertsInBox )
+    graphType = "HananGrid"
+    g, aCmC, nVertices, nEdges = makeGraph( intCoordx, intCoordy, intCoordz, graphType, nBoxes, aperture, diff, DX ) 
+
+    cent = g.vertex_properties["cent"]
+    e_length      = g.edge_properties["e_length"]
+    e_width       = g.edge_properties["e_width"]
+    cap           = g.edge_properties["cap"]      # capacity for flow in each edge
+    path_crit     = g.edge_properties["path_crit"]
 
     ############################################################################################
     ## Graph interpretation starts here

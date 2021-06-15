@@ -20,11 +20,13 @@ gt = graphToolwrapper.all()
 
 
 
-def abstractGraphMaker(fracBoxes, graphType):
-	""" Set of methods, that create a graph out of the fracture geometries.
-	"""
+def abstractGraphMaker( fracBoxes, graphType ):
+    """ Set of methods, that create a graph out of the fracture geometries.
+    """
+    raise NotImplementedError('Do not call abstract method directly')
 
-def makeGraph(fracBoxes, graphType):
+# def makeGraph(fracBoxes, graphType):
+def makeGraph( intCoordx, intCoordy, intCoordz, graphType, nBoxes, aperture, diff, DX ):
 	# TODO
 	# -rename graphType
 	# 	- nodeEdgeConvention
@@ -37,20 +39,23 @@ def makeGraph(fracBoxes, graphType):
 	# 	- are new_edge_properties assessible using g.property?
 	#
 
-	if graphType == "HananGrid":
-		xID, yID, zID = segmentDomain( intCoordx, intCoordy, intCoordz )
-		g = initializeGraph( )
-		cent, vertsInBox, segments, domainSegBoxes = addFracSegmentNode( g,xID, yID, zID,xCoord,yCoord,zCoord )
-		e_length, e_width, cap, path_crit, nEdges  = addEdgesBetweenFracSegments( g,xCoord, yCoord, zCoord, segments, domainSegBoxes )
-		
-	elif graphType == "IntersectSize":
-		print( " graphType: 'IntersectSize' not yet implemented" )
-		# TODO: error/exception instead of print
-		sys.exit()
+    if graphType == "HananGrid":
+        sourceTargetCentroids = [[0.0,0.0,0.0],[0.0,0.0,0.0]]
+        xID, yID, zID, xCoord, yCoord, zCoord = segmentDomain( intCoordx, intCoordy, intCoordz, nBoxes )
+        g = initializeGraph( sourceTargetCentroids )
+        vertsInBox, segments, domainSegBoxes, nVertices = addFracSegmentNode( g,xID, yID, zID, xCoord, yCoord, zCoord )
+        # g is changed here without needing to be returned by the function.
+        # this is not "clean code" best practice...
+        e_length, e_width, cap, path_crit, nEdges, aCmC = addEdgesBetweenFracSegments( g,xCoord, yCoord, zCoord, segments, domainSegBoxes, aperture, diff, DX, vertsInBox )
+
+    elif graphType == "IntersectSize":
+        print( " graphType: 'IntersectSize' not yet implemented" )
+        # TODO: error/exception instead of print
+        sys.exit()
 
 	
-	# return fracGraph
-	return g
+    # return fracGraph
+    return g, aCmC, nVertices, nEdges
 
 def segmentDomain( intCoordx, intCoordy, intCoordz, nBoxes ):
 	# TODO
