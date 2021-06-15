@@ -12,8 +12,10 @@
 
 import sys
 import numpy as np
-import graph_tool.all as gt
-import graph_tool.topology as tp
+from graphToolwrapper import *
+
+gt = graphToolwrapper.all()
+tp = graphToolwrapper.topology()
 
 
 def abstractQestimator(fracGraph, solver):
@@ -21,17 +23,17 @@ def abstractQestimator(fracGraph, solver):
 
 	"""
 
-def estimateFlowRate(abstractQestimator):
+def estimateFlowRate( g, solver ):
 	# requires cap and eps
 
 	if solver == "SPM": # shortest path maxflow
-		res, max_flow = solveMaxFlow(cap)
+		g, max_flow = solveMaxFlow(cap)
 
-		# abort of no percolation
-	    if abs(max_flow - 0.0)<eps:
-			print ""
-			print "Graph not connected. No percolation possible."
-			print ""
+		# terminate of no percolation
+		if abs(max_flow - 0.0)<eps:
+			print( "" )
+			print( "Graph not connected. No percolation possible." )
+			print( "" )
 			return 0.0, 0, nVertices, nEdges # Qvalue, number of paths.
 
 		removeNoFlowEdges(g, res, eps)
@@ -39,29 +41,29 @@ def estimateFlowRate(abstractQestimator):
 
 		# Clean up, so flow only goes in one direction
 		for e in g.edges():
-		    eSrc = e.source()
-		    eTgt = e.target()
-		    if not g.edge(eTgt,eSrc):
-		        continue
-		    else:
-		        eReverse = g.edge(eTgt,eSrc)
+			eSrc = e.source()
+			eTgt = e.target()
+			if not g.edge(eTgt,eSrc):
+				continue
+			else:
+				eReverse = g.edge(eTgt,eSrc)
 
-		    there = res[e]
-		    back  = res[eReverse]
+			there = res[e]
+			back  = res[eReverse]
 
-		    if there > 0 and back > 0:
+			if there > 0 and back > 0:
 				if there >= back:
-				    res[e] -= back
-				    res[eReverse] = 0
+					res[e] -= back
+					res[eReverse] = 0
 				else:
-				    res[eReverse] -= there
-				    res[e] = 0
+					res[eReverse] -= there
+					res[e] = 0
 
 		removeNoFlowEdges(g, res, eps)
 		# remaining Cleanup
 
 		QgravTot, numPaths   = pathFinder(g, src, tgt, res, path_crit, aCmC)
-	    return QgravTot, numPaths, nVertices, nEdges
+		return QgravTot, numPaths, nVertices, nEdges
 
 
 
@@ -73,10 +75,44 @@ def estimateFlowRate(abstractQestimator):
 
 	return Q
 
+
+def solveMaxFlow(g):
+	cap           = g.edge_properties["cap"]  
+	full_source = 0
+	full_target = 1
+	src, tgt = g.vertex(full_source), g.vertex(full_target)               # set the source and target nodes
+	res = gt.edmonds_karp_max_flow(g, src, tgt, cap)
+	res.a = cap.a - res.a  # the actual flow
+	max_flow = sum(res[e] for e in tgt.in_edges())    # the maximum flow is the sum of the individual paths
+
+	return g, max_flow, res, src, tgt 
+
 def removeNoFlowEdges(g, res, eps):
 	noFlow = gt.find_edge_range(g, res, [0.0, eps])
 	for s in noFlow:
 	    g.remove_edge(s)
+
+def singleDirectionFlowCleanup( g, res ):
+	# Clean up, so flow only goes in one direction
+	for e in g.edges():
+		eSrc = e.source()
+		eTgt = e.target()
+		if not g.edge(eTgt,eSrc):
+			continue
+		else:
+			eReverse = g.edge(eTgt,eSrc)
+
+		there = res[e]
+		back  = res[eReverse]
+
+		if there > 0 and back > 0:
+			if there >= back:
+				res[e] -= back
+				res[eReverse] = 0
+			else:
+				res[eReverse] -= there
+				res[e] = 0
+	return g, res
 
 
 

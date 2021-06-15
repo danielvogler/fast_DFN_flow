@@ -17,6 +17,7 @@ import copy as cp
 import sys
 from getFracGeometries import *
 from graphMaking import *
+from flowRateEstimation import *
 from graphToolwrapper import *
 
 gt = graphToolwrapper.all()
@@ -72,44 +73,18 @@ def segmentation(workingDir, inputFile):
     ## Graph interpretation starts here
     ############################################################################################
 
-    # solving the max flow problem
-    full_source = 0
-    full_target = 1
-    src, tgt = g.vertex(full_source), g.vertex(full_target)               # set the source and target nodes
-    res = gt.edmonds_karp_max_flow(g, src, tgt, cap)
-    res.a = cap.a - res.a  # the actual flow
-    max_flow = sum(res[e] for e in tgt.in_edges())    # the maximum flow is the sum of the individual paths
+    g, max_flow, res, src, tgt = solveMaxFlow(g)
 
+    # terminate if no percolation
     if abs(max_flow - 0.0)<eps:
       print( "\nGraph not connected. No percolation possible.\n")
       return 0.0, 0, nVertices, nEdges # Qvalue, number of paths.
 
-    noFlow = gt.find_edge_range(g, res, [0.0, eps])
-    for s in noFlow:
-        g.remove_edge(s)
+    removeNoFlowEdges(g, res, eps)
 
-    for e in g.edges():
-        eSrc = e.source()
-        eTgt = e.target()
-        if not g.edge(eTgt,eSrc):
-            continue
-        else:
-            eReverse = g.edge(eTgt,eSrc)
-
-        there = res[e]
-        back  = res[eReverse]
-
-        if there > 0 and back > 0:
-                if there >= back:
-                    res[e] -= back
-                    res[eReverse] = 0
-                else:
-                    res[eReverse] -= there
-                    res[e] = 0
-
-    noFlow = gt.find_edge_range(g, res, [0.0, eps])
-    for s in noFlow:
-        g.remove_edge(s)
+    g, res = singleDirectionFlowCleanup( g, res )
+    
+    removeNoFlowEdges(g, res, eps)
 
     ############################################################################################
     ### Get path information
