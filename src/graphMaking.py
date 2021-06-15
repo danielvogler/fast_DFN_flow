@@ -226,10 +226,7 @@ def addEdgesBetweenFracSegments( g,xCoord, yCoord, zCoord, segments, domainSegBo
                             nEdges = connect_nodes(g, seg,segup,width, diff, DX, nEdges, aCmC)
 
     # Normalize to avoid numerical precision issues.
-    cap           = g.edge_properties["cap"]      # capacity for flow in each edge
-    capIndex = np.where(cap.a < 99)
-    cap_max = max(cap.a[capIndex])
-    cap.a[capIndex] /= cap_max
+    cap, cap_max = normalizeEdgeCapacities(g)
 
     # Attach inlet and outlet to their respective intersections.
     e_length, e_width, cap, path_crit, nEdges = attachBoundaryNodes( g, vertsInBox, nEdges )
@@ -290,6 +287,14 @@ def connect_nodes( g, node1, node2, width, diff, DX, nEdges, aCmC ):
     
     nEdges += 2
     return nEdges
+
+def normalizeEdgeCapacities(g):
+    # Normalize to avoid numerical precision issues.
+    cap           = g.edge_properties["cap"]      # capacity for flow in each edge
+    capIndex = np.where(cap.a < 99)
+    cap_max = max(cap.a[capIndex])
+    cap.a[capIndex] /= cap_max
+    return cap, cap_max
 
 def attachBoundaryNodes( g, vertsInBox, nEdges ):
 
