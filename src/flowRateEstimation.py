@@ -118,10 +118,16 @@ def singleDirectionFlowCleanup( g, res ):
 
 
 
-def pathFinder(gCopy, src, tgt, resCopy, path_crit, aCmC):
+def pathFinder( gCopy, src, tgt, resCopy, path_crit, aCmC, eps ):
 	# TODO
 	# - fix indentation
 	# - test resCopy.copy()
+
+	cent = gCopy.vertex_properties["cent"]
+	e_length      = gCopy.edge_properties["e_length"]
+	e_width       = gCopy.edge_properties["e_width"]
+	# cap           = gCopy.edge_properties["cap"]      # capacity for flow in each edge
+	# path_crit     = gCopy.edge_properties["path_crit"]
 
 
 	numPaths     = 0
@@ -134,7 +140,7 @@ def pathFinder(gCopy, src, tgt, resCopy, path_crit, aCmC):
 	dxPart   = (10.6)**2
 	########
 
-	for i in xrange(0,1000): # perhaps do a while loop instead. This should be safer...
+	for i in range(0,1000): # perhaps do a while loop instead. This should be safer...
 		pLength    = []  # store lengths of this path
 		pWidth     = []  # store widths of this path
 		pFactor    = []  # store flow factor of this path (percentage of the edge that this path uses).
@@ -186,5 +192,5 @@ def pathFinder(gCopy, src, tgt, resCopy, path_crit, aCmC):
 			# calculate Q for this path
 			QgravTot += aCmC/(wSuperWeighted*pLdiag)*pGrav
 
-			removeNoFlowEdges(g, res, eps)
+			removeNoFlowEdges(gCopy, resCopy, eps)
 			numPaths += 1
