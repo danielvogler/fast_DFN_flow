@@ -236,6 +236,7 @@ def simpleMethod(workingDir, inputFile):
           numPaths += 1
     
     QgravTot, numPaths = pathFinder(g, src, tgt, res, path_crit, aCmC)
+    # QgravTot, numPaths   = pathFinder( g, src, tgt, res, path_crit, aCmC, eps )
 
     return QgravTot, numPaths, nVertices, nEdges
     

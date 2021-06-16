@@ -129,12 +129,13 @@ def pathFinder( gCopy, src, tgt, resCopy, path_crit, aCmC, eps ):
 	# cap           = gCopy.edge_properties["cap"]      # capacity for flow in each edge
 	# path_crit     = gCopy.edge_properties["path_crit"]
 
+	numPaths, resFull, QgravTot, gravPart = initializePathFinder(resCopy)
+	# numPaths     = 0
+	# resFull      = resCopy.copy()
+	# QgravTot     = 0.
 
-	numPaths     = 0
-	resFull      = resCopy.copy()
-	QgravTot     = 0.
+	# gravPart = 9.81*1000
 
-	gravPart = 9.81*1000
 	########
 	# change this when using a different DFN size
 	dxPart   = (10.6)**2
@@ -194,3 +195,11 @@ def pathFinder( gCopy, src, tgt, resCopy, path_crit, aCmC, eps ):
 
 			removeNoFlowEdges(gCopy, resCopy, eps)
 			numPaths += 1
+
+def initializePathFinder(resCopy):
+	numPaths = 0
+	resFull  = resCopy.copy()
+	QgravTot = 0.
+	gravPart = 9.81*1000
+
+	return numPaths, resFull, QgravTot, gravPart

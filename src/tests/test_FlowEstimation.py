@@ -3,6 +3,7 @@ import sys
 sys.path.insert(1, '../')
 from HSPM_opt import segmentation
 from ISPM_opt import simpleMethod
+from flowRateEstimation import *
 
 if __name__ == '__main__':
 	unittest.main()
@@ -79,6 +80,28 @@ class Test3Dcase(unittest.TestCase):
 		self.assertEqual(nVertices, nVertices3D)
 		self.assertEqual(nEdges, nEdges3D)
 		self.assertEqual(Q, Q3D) # not sure why this float comparison works.
+
+class TestPathFinder(unittest.TestCase):
+	# improve resCopy by using simpler saved graph
+	
+	# given
+	def setUp(self):
+		fileName = "bm54_f17_3_Graph_seg.xml.gz"
+		workingDir = "../../benchmark/bm54_f17/plot/"
+		self.g = gt.Graph()
+		self.g.load( workingDir + fileName )
+
+	def test_initializePathFinder(self):
+		pos = self.g.vertex_properties["pos"]
+		
+		# when
+		numPaths, resFull, QgravTot, gravPart = initializePathFinder(pos)
+		
+		# then
+		self.assertEqual(numPaths, 0)
+		self.assertEqual(resFull, pos)
+		self.assertEqual(QgravTot, 0.)
+		self.assertEqual(gravPart, 9.81*1000)
 
 
 
