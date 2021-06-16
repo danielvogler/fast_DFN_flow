@@ -51,7 +51,6 @@ def segmentation(workingDir, inputFile):
     ############################################################################################
     ## Graph interpretation starts here
     ############################################################################################
-
     g, max_flow, res, src, tgt = solveMaxFlow(g)
 
     # terminate if no percolation
@@ -70,5 +69,8 @@ def segmentation(workingDir, inputFile):
     ############################################################################################
 
     QgravTot, numPaths   = pathFinder( g, src, tgt, res, path_crit, aCmC, eps )
+    
+    # solver = "HSPM"
+    # QgravTot, numPaths, nVertices, nEdges = estimateFlowRate( g, solver )
 
     return QgravTot, numPaths, nVertices, nEdges

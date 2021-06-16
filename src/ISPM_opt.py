@@ -181,16 +181,10 @@ def simpleMethod(workingDir, inputFile):
     
     def pathFinder(gCopy, src, tgt, resCopy, path_crit, aCmC):
 
-      numPaths     = 0
-      resFull      = resCopy.copy()
-      QgravTot     = 0.
-      gravPart = 9.81*1000.
+      numPaths, resFull, QgravTot, gravPart = initializePathFinder(resCopy)
       
       for i in range(0,1000): # perhaps do a while loop instead. This should be safer...
-        pLength    = []  # store lengths of this path
-        pWidth     = []  # store widths of this path
-        pFactor    = []  # store flow factor of this path (percentage of the edge that this path uses).
-        pRes       = []  # store the flow results for this path
+
         
         vShort, eShort = tp.shortest_path(gCopy,src,tgt, weights=path_crit) # find shortest path
         
@@ -198,40 +192,34 @@ def simpleMethod(workingDir, inputFile):
           return QgravTot, numPaths  # return values
         
         else:
-          minFlow = 10000
-          eStart = eShort[0]
-          eEnd   = eShort[-1]
-          del eShort[0]
-          del eShort[-1]
-      
-          wSuperWeighted = 0.0
+          pLength, pWidth, pFactor, pRes, minFlow, wSuperWeighted, Ltot = initializeIndividualPath()
+
+          eStart, eEnd, eShort =  getAndRemoveStartAndEndFromPath(eShort)
+
+          # minFlow, Ltot, wSuperWeighted = getMinFlowAndWeightsForHananPath( eShort, e_length, Ltot, wSuperWeighted, resFull, e_width, resCopy, minFlow )
+
+ 
           resOld = resFull[eStart]
           for e in eShort:
                 L = e_length[e]
+                Ltot += L
                 wSuperWeighted += L*resOld/e_width[e]
                 resOld = resFull[e]            
+
                 resC = resCopy[e]
                 if resC < minFlow:
                   minFlow = resC
-          wSuperWeighted /= minFlow
 
-          v_in   = int(vShort[1])
-          v_out  = int(vShort[-2])
-          pGrav  = 1.0e6 - gravPart*(vertexPos[v_out][2] - vertexPos[v_in][2])
+          wSuperWeighted /= minFlow*Ltot
 
-          resCopy[eStart] -= minFlow
-          resCopy[eEnd]   -= minFlow
-          for i,e in enumerate(eShort):
-            # remove flow on this path from graph
-            resCopy[e] -= minFlow
+          pGrav = getGravitationalPart( vShort, vertexPos, gravPart )
+
+          resCopy = removeFlowFromPath( eStart, eEnd, eShort, resCopy, minFlow )
             
-          # calculate Q for this path
-          QgravTot += aCmC/(wSuperWeighted)*pGrav
+          QgravTot = addQforPath( aCmC, wSuperWeighted, Ltot, pGrav, QgravTot )
+
           
-          # remove edges without flow 
-          noFlow = gt.find_edge_range(gCopy, resCopy, [0.0, eps])
-          for s in noFlow:
-            gCopy.remove_edge(s)
+          removeNoFlowEdges(gCopy, resCopy, eps)
     
           numPaths += 1
     

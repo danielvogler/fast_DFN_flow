@@ -5,6 +5,9 @@ from HSPM_opt import segmentation
 from ISPM_opt import simpleMethod
 from flowRateEstimation import *
 
+# TODO
+# - improve float comparison.
+
 if __name__ == '__main__':
 	unittest.main()
 
@@ -72,7 +75,7 @@ class Test3Dcase(unittest.TestCase):
 		Q, numPaths, nVertices, nEdges = simpleMethod(self.workingDir, self.inputFile)
 
 		# then
-		Q3D =  3.060978751842549e-07
+		Q3D =  3.0609787518425496e-07
 		numPaths3D = 178
 		nVertices3D = 1495
 		nEdges3D = 5386	
