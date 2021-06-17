@@ -34,7 +34,8 @@ class Test2Dcase(unittest.TestCase):
 
 	def test_ISPM_opt_2D(self):
 		# when
-		Q, numPaths, nVertices, nEdges = simpleMethod(self.workingDir, self.inputFile)
+		solver = "ISPM_original"
+		Q, numPaths, nVertices, nEdges = simpleMethod(self.workingDir, self.inputFile, solver)
 
 		# then
 		Q2D =  1.0980362356816208e-08
@@ -72,7 +73,8 @@ class Test3Dcase(unittest.TestCase):
 
 	def test_ISPM_opt_3D(self):
 		# when
-		Q, numPaths, nVertices, nEdges = simpleMethod(self.workingDir, self.inputFile)
+		solver = "ISPM_original"
+		Q, numPaths, nVertices, nEdges = simpleMethod(self.workingDir, self.inputFile, solver)
 
 		# then
 		Q3D =  3.0609787518425496e-07

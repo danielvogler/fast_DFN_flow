@@ -19,8 +19,9 @@ from ISPM_opt import *
 
 saving 				= 0		# save results to file
 
-segment 			= 1 	# use HSPM
-simpleWidth 		= 0     # use ISPM
+segment 			= 0 	# use HSPM
+simpleWidth 		= 1     # use ISPM
+
 
 if saving == 1:
 	filename = 'ISPM_100_case_results_Quartz.txt'
@@ -52,8 +53,10 @@ for i in range(66,69):
 		Q, numPaths, nVertices, nEdges = segmentation(workingDir, inputFile)
 
 	if simpleWidth == 1:
+		solver = "ISPM_original"
+		# solver = "ISPM_check"
 		# Q, numPaths, nVertices, nEdges, tRead, tG1, tG2, tG3, tG4, tGraph, tMaxFlow, tBugFix, tPath = simpleMethod(workingDir, inputFile)
-		Q, numPaths, nVertices, nEdges = simpleMethod(workingDir, inputFile)
+		Q, numPaths, nVertices, nEdges = simpleMethod(workingDir, inputFile, solver)
 
 	elapsed = time.time() - t
 

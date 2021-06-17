@@ -184,6 +184,24 @@ def getMinFlowAndWeightsForHananPath( eShort, e_length, Ltot, wSuperWeighted, re
 
 	return  minFlow, Ltot, wSuperWeighted
 
+def getMinFlowAndWeightsForIntersectPath( eStart, eShort, e_length, Ltot, wSuperWeighted, resFull, e_width, resCopy, minFlow ):
+	# AH: There may be a bug here.
+	# It is unclear to me why this differs from HSPM version.
+	resOld = resFull[eStart]
+	for e in eShort:
+		L = e_length[e]
+		Ltot += L
+		wSuperWeighted += L*resOld/e_width[e]
+		resOld = resFull[e]            
+
+		resC = resCopy[e]
+		if resC < minFlow:
+			minFlow = resC
+
+	wSuperWeighted /= minFlow*Ltot
+
+	return  minFlow, Ltot, wSuperWeighted
+
 
 
 

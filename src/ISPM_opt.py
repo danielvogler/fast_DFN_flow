@@ -20,7 +20,7 @@ gt = graphToolwrapper.all()
 tp = graphToolwrapper.topology()
 
 #@profile
-def simpleMethod(workingDir, inputFile):
+def simpleMethod(workingDir, inputFile, solver):
     eps = 1.0e-9 # used for float comparison.
     aperture   = 1.0e-5
 
@@ -196,21 +196,10 @@ def simpleMethod(workingDir, inputFile):
 
           eStart, eEnd, eShort =  getAndRemoveStartAndEndFromPath(eShort)
 
-          # minFlow, Ltot, wSuperWeighted = getMinFlowAndWeightsForHananPath( eShort, e_length, Ltot, wSuperWeighted, resFull, e_width, resCopy, minFlow )
-
- 
-          resOld = resFull[eStart]
-          for e in eShort:
-                L = e_length[e]
-                Ltot += L
-                wSuperWeighted += L*resOld/e_width[e]
-                resOld = resFull[e]            
-
-                resC = resCopy[e]
-                if resC < minFlow:
-                  minFlow = resC
-
-          wSuperWeighted /= minFlow*Ltot
+          if solver == "ISPM_original":
+            minFlow, Ltot, wSuperWeighted = getMinFlowAndWeightsForIntersectPath( eStart, eShort, e_length, Ltot, wSuperWeighted, resFull, e_width, resCopy, minFlow )
+          elif solver == "ISPM_check":
+            minFlow, Ltot, wSuperWeighted = getMinFlowAndWeightsForHananPath( eShort, e_length, Ltot, wSuperWeighted, resFull, e_width, resCopy, minFlow )
 
           pGrav = getGravitationalPart( vShort, vertexPos, gravPart )
 
